@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://backclub.onrender.com",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

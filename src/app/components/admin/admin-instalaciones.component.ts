@@ -1,0 +1,188 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { InstalacionService } from '../../core/services/instalacion.service';
+import { Instalacion } from '../../models/instalacion.model';
+
+@Component({
+  selector: 'app-admin-instalaciones',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="admin-section">
+      <div class="section-header">
+        <h2>Gestión de Instalaciones</h2>
+        <button (click)="showForm = !showForm" class="btn btn-primary">
+          {{ showForm ? 'Cancelar' : 'Nueva Instalación' }}
+        </button>
+      </div>
+
+      <!-- Form -->
+      <div class="form-container" *ngIf="showForm">
+        <form [formGroup]="instalacionForm" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" formControlName="nombre" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Capacidad</label>
+              <input type="number" formControlName="capacidad" class="form-control" min="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea formControlName="descripcion" class="form-control" rows="3"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Estado</label>
+              <select formControlName="estado" class="form-control">
+                <option value="">Seleccionar estado</option>
+                <option value="Disponible">Disponible</option>
+                <option value="No disponible">No disponible</option>
+                <option value="Mantenimiento">Mantenimiento</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Imagen (URL)</label>
+              <input type="text" formControlName="imagen" class="form-control" placeholder="https://...">
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-success" [disabled]="!instalacionForm.valid || loading">
+              {{ editingId ? 'Actualizar' : 'Crear' }}
+            </button>
+            <button type="button" (click)="resetForm()" class="btn btn-secondary">Limpiar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- List -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Capacidad</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ins of instalaciones()">
+              <td>{{ ins.nombre }}</td>
+              <td>{{ ins.descripcion }}</td>
+              <td>{{ ins.capacidad }}</td>
+              <td>{{ ins.estado }}</td>
+              <td>
+                <button (click)="editInstalacion(ins)" class="btn btn-sm btn-warning">Editar</button>
+                <button (click)="deleteInstalacion(ins.id!)" class="btn btn-sm btn-danger">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .admin-section { padding: 2rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .form-container { background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+    .form-control { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+    .form-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+    .btn { padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #007bff; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: #212529; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+    .table-container { overflow-x: auto; }
+    .table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+    .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+    .table th { background: #f8f9fa; font-weight: 600; }
+  `]
+})
+export class AdminInstalacionesComponent implements OnInit {
+  instalaciones = signal<Instalacion[]>([]);
+  instalacionForm: FormGroup;
+  showForm = false;
+  loading = false;
+  editingId: number | null = null;
+
+  constructor(
+    private instalacionesService: InstalacionService,
+    private fb: FormBuilder
+  ) {
+    this.instalacionForm = this.fb.group({
+      nombre: ['', Validators.required],
+      descripcion: [''],
+      capacidad: [0, [Validators.required, Validators.min(0)]],
+      estado: [''],
+      imagen: ['']
+    });
+  }
+
+  ngOnInit() {
+    this.loadInstalaciones();
+  }
+
+  loadInstalaciones() {
+    this.instalacionesService.getAll().subscribe({
+      next: (data) => this.instalaciones.set(data),
+      error: (error) => console.error('Error loading instalaciones:', error)
+    });
+  }
+
+  onSubmit() {
+    if (this.instalacionForm.valid) {
+      this.loading = true;
+      const data = this.instalacionForm.value;
+
+      const op = this.editingId
+        ? this.instalacionesService.update(this.editingId, data)
+        : this.instalacionesService.create(data);
+
+      op.subscribe({
+        next: () => {
+          this.loading = false;
+          this.loadInstalaciones();
+          this.resetForm();
+          this.showForm = false;
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Error saving instalacion:', error);
+        }
+      });
+    }
+  }
+
+  editInstalacion(ins: Instalacion) {
+    this.editingId = ins.id!;
+    this.instalacionForm.patchValue(ins);
+    this.showForm = true;
+  }
+
+  deleteInstalacion(id: number) {
+    if (confirm('¿Eliminar esta instalación?')) {
+      this.instalacionesService.delete(id).subscribe({
+        next: () => this.loadInstalaciones(),
+        error: (error) => console.error('Error deleting instalacion:', error)
+      });
+    }
+  }
+
+  resetForm() {
+    this.instalacionForm.reset();
+    this.editingId = null;
+  }
+}

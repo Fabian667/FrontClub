@@ -56,6 +56,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "clubSocialRest:build:production"
@@ -86,5 +89,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "04a60260-895c-4665-a730-ece6348480ec"
   }
 }

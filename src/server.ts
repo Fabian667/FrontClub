@@ -6,23 +6,31 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import multer from 'multer';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
+const uploadsFolder = join(import.meta.dirname, '../public/uploads');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
+// Servir imágenes subidas desde /public/uploads
+app.use('/uploads', express.static(uploadsFolder, { maxAge: '1y' }));
+
+// Endpoint de subida de imágenes
+const storage = multer.diskStorage({
+  destination: uploadsFolder,
+  filename: (req: any, file: any, cb: any) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = (file?.originalname || '').split('.').pop();
+    cb(null, `${unique}.${ext || 'bin'}`);
+  },
+});
+const upload = multer({ storage });
+app.post('/api/upload', upload.single('file'), (req: any, res) => {
+  const filename = req?.file?.filename;
+  res.json({ path: `/uploads/${filename}` });
+});
 
 /**
  * Serve static files from /browser

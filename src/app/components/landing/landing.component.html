@@ -1,0 +1,190 @@
+<div class="landing">
+  <header class="site-header">
+    <div class="container header-content">
+      <div class="brand"><a routerLink="/">+Verde</a></div>
+      <nav class="nav-links">
+        <a href="#noticias">Noticias</a>
+        <a href="#actividades">Actividades</a>
+        <a href="#instalaciones">Instalaciones</a>
+        <a href="#eventos">Eventos</a>
+        <a *ngIf="!isLoggedIn()" routerLink="/admin/login" class="login-btn">Login</a>
+        <button *ngIf="isLoggedIn()" (click)="logout()" class="login-btn">Salir</button>
+      </nav>
+    </div>
+  </header>
+  <!-- Hero Section -->
+  <section class="hero" [ngStyle]="{ 'background-image': backgroundStyle() }">
+    <div class="hero-content">
+      <h1>+Verde</h1>
+      <p>Descubre nuestras actividades, instalaciones, eventos y noticias</p>
+      <!-- Botón de administrar eliminado -->
+      <div class="details" *ngIf="reservasCount() >= 0">
+        <span>Reservas registradas: {{ reservasCount() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Noticias Section -->
+  <section class="section" id="noticias">
+    <div class="container">
+      <h2>Noticias</h2>
+      <div class="grid">
+        <div class="card" *ngFor="let noticia of noticias()">
+          <div class="card-image" *ngIf="noticia.imagenUrl">
+            <img [src]="noticia.imagenUrl" alt="Imagen noticia" />
+          </div>
+          <div class="card-content">
+            <h3>{{ noticia.titulo }}</h3>
+            <p *ngIf="noticia.descripcion">{{ noticia.descripcion }}</p>
+            <div class="details" *ngIf="noticia.fecha">
+              <span>{{ noticia.fecha }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="noticias().length === 0" class="empty-msg">No hay noticias disponibles por el momento.</p>
+    </div>
+  </section>
+
+  <!-- Actividades Section -->
+  <section class="section" id="actividades">
+    <div class="container">
+      <h2>Nuestras Actividades</h2>
+      <div class="grid">
+        <div class="card" *ngFor="let actividad of actividades()">
+          <div class="card-content">
+            <h3>{{ actividad.nombre }}</h3>
+            <p>{{ actividad.descripcion }}</p>
+            <div class="details" *ngIf="actividad.diaSemana || actividad.horaInicio">
+              <span *ngIf="actividad.diaSemana">{{ actividad.diaSemana }}</span>
+              <span *ngIf="actividad.horaInicio">{{ actividad.horaInicio }} - {{ actividad.horaFin }}</span>
+              <span *ngIf="actividad.precioHora" class="precio">${{ actividad.precioHora }}/hora</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="actividades().length === 0" class="empty-msg">No hay actividades disponibles por el momento.</p>
+    </div>
+  </section>
+
+  <!-- Instalaciones Section -->
+  <section class="section alt" id="instalaciones">
+    <div class="container">
+      <h2>Nuestras Instalaciones</h2>
+      <div class="grid">
+        <div class="card" *ngFor="let instalacion of instalaciones()">
+          <div class="card-image" *ngIf="instalacion.imagen">
+            <img [src]="instalacion.imagen" alt="Imagen instalación" />
+          </div>
+          <div class="card-content">
+            <h3>{{ instalacion.nombre }}</h3>
+            <p>{{ instalacion.descripcion }}</p>
+            <div class="details" *ngIf="instalacion.capacidad">
+              <span>Capacidad: {{ instalacion.capacidad }} personas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="instalaciones().length === 0" class="empty-msg">No hay instalaciones disponibles o no se pudieron cargar.</p>
+    </div>
+  </section>
+
+  <!-- Eventos Section -->
+  <section class="section" id="eventos">
+    <div class="container">
+      <h2>Próximos Eventos</h2>
+      <div class="grid">
+        <div class="card" *ngFor="let evento of eventos()">
+          <div class="card-image" *ngIf="evento.imagen">
+            <img [src]="evento.imagen" alt="Imagen evento" />
+          </div>
+          <div class="card-content">
+            <h3>{{ evento.nombre }}</h3>
+            <p>{{ evento.descripcion }}</p>
+            <div class="details" *ngIf="evento.fecha || evento.lugar">
+              <span *ngIf="evento.fecha">{{ evento.fecha }}</span>
+              <span *ngIf="evento.horaInicio">{{ evento.horaInicio }} - {{ evento.horaFin }}</span>
+              <span *ngIf="evento.lugar">{{ evento.lugar }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="eventos().length === 0" class="empty-msg">No hay eventos programados o no se pudieron cargar.</p>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contacto" class="contact-section">
+    <div class="container">
+      <h2>Contacto</h2>
+      <div class="contact-grid">
+        <!-- Contact Form -->
+        <div class="contact-form">
+          <h3>Envíanos un mensaje</h3>
+          <form #contactForm="ngForm" (ngSubmit)="onContactSubmit(contactForm)">
+            <div class="form-group">
+              <label for="name">Nombre</label>
+              <input type="text" id="name" name="name" ngModel required>
+            </div>
+            <div class="form-group">
+              <label for="message">Mensaje</label>
+              <textarea id="message" name="message" rows="4" ngModel required></textarea>
+            </div>
+            <button type="submit" class="submit-btn" [disabled]="!contactForm.valid">Enviar</button>
+          </form>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="contact-info">
+          <h3>Información de contacto</h3>
+          <div class="info-item" *ngIf="contactInfo().address">
+            <strong>Dirección:</strong>
+            <p>{{ contactInfo().address }}</p>
+          </div>
+          <div class="info-item" *ngIf="contactInfo().phone">
+            <strong>Teléfono:</strong>
+            <p>{{ contactInfo().phone }}</p>
+          </div>
+          <div class="info-item" *ngIf="contactInfo().email">
+            <strong>Email:</strong>
+            <p>{{ contactInfo().email }}</p>
+          </div>
+          
+          <!-- Social Media -->
+          <div class="social-links" *ngIf="contactInfo().facebook || contactInfo().instagram">
+            <h4>Síguenos</h4>
+            <div class="social-buttons">
+              <a *ngIf="contactInfo().facebook" [href]="contactInfo().facebook" target="_blank" class="social-btn facebook">
+                Facebook
+              </a>
+              <a *ngIf="contactInfo().instagram" [href]="contactInfo().instagram" target="_blank" class="social-btn instagram">
+                Instagram
+              </a>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="map-container" *ngIf="contactInfo().mapsUrl">
+            <h4>Ubicación</h4>
+            <iframe 
+              [src]="contactInfo().mapsUrl" 
+              width="100%" 
+              height="250" 
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 +Verde. Todos los derechos reservados.</p>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,15 @@
+<div class="login">
+  <h2>Iniciar sesión</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <label>Email</label>
+    <input type="email" formControlName="email" />
+
+    <label>Contraseña</label>
+    <input type="password" formControlName="password" />
+
+    <button type="submit" [disabled]="loading()">Entrar</button>
+    <!-- Botón Cancelar -->
+    <button type="button" class="secondary-btn" (click)="cancel()">Cancelar</button>
+  </form>
+  <p class="error" *ngIf="error() as e">{{ e }}</p>
+</div>

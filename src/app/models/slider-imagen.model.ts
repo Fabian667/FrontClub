@@ -1,3 +1,5 @@
+export type SliderSeccion = 'landing' | 'actividades' | 'instalaciones' | 'eventos' | 'noticias';
+
 export interface SliderImagen {
   id?: number;
   titulo?: string;
@@ -6,6 +8,8 @@ export interface SliderImagen {
   imagen: string;
   // Enlace opcional al hacer click
   enlace?: string;
+  // Sección donde se mostrará el slider
+  seccion?: SliderSeccion;
   // Orden de aparición
   orden?: number;
   // Activo/inactivo

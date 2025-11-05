@@ -26,6 +26,16 @@ import { SliderImagen } from '../../models/slider-imagen.model';
               <input type="text" class="form-control" formControlName="titulo">
             </div>
             <div class="form-group">
+              <label>Sección</label>
+              <select class="form-control" formControlName="seccion">
+                <option value="landing">Pantalla principal</option>
+                <option value="actividades">Actividades</option>
+                <option value="instalaciones">Instalaciones</option>
+                <option value="eventos">Eventos</option>
+                <option value="noticias">Noticias</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Orden</label>
               <input type="number" class="form-control" formControlName="orden" min="0">
             </div>
@@ -80,6 +90,7 @@ import { SliderImagen } from '../../models/slider-imagen.model';
           <thead>
             <tr>
               <th>Título</th>
+              <th>Sección</th>
               <th>Orden</th>
               <th>Activo</th>
               <th>Vigencia</th>
@@ -90,6 +101,7 @@ import { SliderImagen } from '../../models/slider-imagen.model';
           <tbody>
             <tr *ngFor="let s of sliders()">
               <td>{{ s.titulo || '-' }}</td>
+              <td>{{ s.seccion || '-' }}</td>
               <td>{{ s.orden ?? '-' }}</td>
               <td>{{ s.activo ? 'Sí' : 'No' }}</td>
               <td>
@@ -150,6 +162,7 @@ export class AdminSliderComponent implements OnInit {
     descripcion: [''],
     imagen: ['', Validators.required],
     enlace: [''],
+    seccion: ['landing', Validators.required],
     orden: [0, [Validators.min(0)]],
     activo: [true],
     fechaInicio: [''],
@@ -206,6 +219,7 @@ export class AdminSliderComponent implements OnInit {
       descripcion: s.descripcion || '',
       imagen: s.imagen || '',
       enlace: s.enlace || '',
+      seccion: s.seccion || 'landing',
       orden: s.orden ?? 0,
       activo: !!s.activo,
       fechaInicio: s.fechaInicio || '',
@@ -224,6 +238,6 @@ export class AdminSliderComponent implements OnInit {
 
   resetForm() {
     this.editingId = null;
-    this.form.reset({ activo: true, orden: 0 });
+    this.form.reset({ activo: true, orden: 0, seccion: 'landing' });
   }
 }

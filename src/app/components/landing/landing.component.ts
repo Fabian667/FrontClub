@@ -6,6 +6,7 @@ import { ActividadService } from '../../core/services/actividad.service';
 import { InstalacionService } from '../../core/services/instalacion.service';
 import { EventoService } from '../../core/services/evento.service';
 import { NoticiaService } from '../../core/services/noticia.service';
+import { SliderService } from '../../core/services/slider.service';
 import { ReservaService } from '../../core/services/reserva.service';
 import { EmailService, ContactMessagePayload } from '../../core/services/email.service';
 
@@ -34,6 +35,7 @@ export class LandingComponent implements OnInit {
   private reservasSrv = inject(ReservaService);
   private platformId = inject(PLATFORM_ID);
   private emailSrv = inject(EmailService);
+  private sliderSrv = inject(SliderService);
 
   isLoggedIn = signal<boolean>(false);
 
@@ -44,6 +46,8 @@ export class LandingComponent implements OnInit {
   reservasCount = signal<number>(0);
 
   backgroundStyle = signal<string>('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
+  private landingSliders = signal<string[]>([]);
+  private sliderIndex = 0;
   contactInfo = signal<ContactInfo>({});
   // Estado del menú hamburguesa
   menuOpen = signal<boolean>(false);
@@ -58,6 +62,16 @@ export class LandingComponent implements OnInit {
       this.isLoggedIn.set(!!localStorage.getItem('token'));
       this.loadContactInfo();
       this.updateBackgroundStyle();
+      this.loadLandingSliders();
+      // rotación de slider cada 6s
+      setInterval(() => {
+        const imgs = this.landingSliders();
+        if (imgs.length > 0) {
+          this.sliderIndex = (this.sliderIndex + 1) % imgs.length;
+          const current = imgs[this.sliderIndex];
+          this.backgroundStyle.set(`url(${current})`);
+        }
+      }, 6000);
       
       // Listen for storage changes
       window.addEventListener('storage', (ev) => {
@@ -73,11 +87,38 @@ export class LandingComponent implements OnInit {
 
   private updateBackgroundStyle() {
     if (isPlatformBrowser(this.platformId)) {
-      const imgs = JSON.parse(localStorage.getItem('landingSliderImages') || '[]');
-      const current = imgs?.[0] || '';
+      const lsImgs = JSON.parse(localStorage.getItem('landingSliderImages') || '[]');
+      const current = lsImgs?.[0] || '';
       const style = current ? `url(${current})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
       this.backgroundStyle.set(style);
     }
+  }
+
+  private loadLandingSliders() {
+    this.sliderSrv.getActivos().subscribe({
+      next: (list) => {
+        const now = new Date();
+        const imgs = (list || [])
+          .filter((s) => (s.seccion ?? 'landing') === 'landing')
+          .filter((s) => s.activo !== false)
+          .filter((s) => {
+            const startOk = !s.fechaInicio || new Date(s.fechaInicio) <= now;
+            const endOk = !s.fechaFin || new Date(s.fechaFin) >= now;
+            return startOk && endOk;
+          })
+          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+          .map((s) => s.imagen)
+          .filter((url) => !!url);
+        this.landingSliders.set(imgs);
+        if (imgs.length > 0) {
+          this.sliderIndex = 0;
+          this.backgroundStyle.set(`url(${imgs[0]})`);
+        }
+      },
+      error: () => {
+        // en error, dejamos el fondo por defecto o el de localStorage
+      }
+    });
   }
 
   private loadPublic() {

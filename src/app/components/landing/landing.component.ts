@@ -45,6 +45,8 @@ export class LandingComponent implements OnInit {
 
   backgroundStyle = signal<string>('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
   contactInfo = signal<ContactInfo>({});
+  // Estado del menú hamburguesa
+  menuOpen = signal<boolean>(false);
 
   constructor() {
     this.loadPublic();
@@ -103,6 +105,16 @@ export class LandingComponent implements OnInit {
       localStorage.removeItem('token');
     }
     this.isLoggedIn.set(false);
+  }
+
+  // Toggle del menú hamburguesa
+  toggleMenu() {
+    this.menuOpen.set(!this.menuOpen());
+  }
+
+  // Cerrar menú al seleccionar opción
+  closeMenu() {
+    this.menuOpen.set(false);
   }
 
   onContactSubmit(form: NgForm) {

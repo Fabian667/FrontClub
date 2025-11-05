@@ -2,13 +2,23 @@
   <header class="site-header">
     <div class="container header-content">
       <div class="brand"><a routerLink="/">+Verde</a></div>
-      <nav class="nav-links">
-        <a href="#noticias">Noticias</a>
-        <a href="#actividades">Actividades</a>
-        <a href="#instalaciones">Instalaciones</a>
-        <a href="#eventos">Eventos</a>
-        <a *ngIf="!isLoggedIn()" routerLink="/admin/login" class="login-btn">Login</a>
-        <button *ngIf="isLoggedIn()" (click)="logout()" class="login-btn">Salir</button>
+      <!-- Botón menú hamburguesa -->
+      <button class="menu-toggle" type="button"
+              aria-label="Abrir menú"
+              aria-controls="primary-nav"
+              [attr.aria-expanded]="menuOpen()"
+              (click)="toggleMenu()">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <nav id="primary-nav" class="nav-links" [class.open]="menuOpen()">
+        <a href="#noticias" (click)="closeMenu()">Noticias</a>
+        <a href="#actividades" (click)="closeMenu()">Actividades</a>
+        <a href="#instalaciones" (click)="closeMenu()">Instalaciones</a>
+        <a href="#eventos" (click)="closeMenu()">Eventos</a>
+        <a *ngIf="!isLoggedIn()" routerLink="/admin/login" class="login-btn" (click)="closeMenu()">Login</a>
+        <button *ngIf="isLoggedIn()" (click)="logout(); closeMenu()" class="login-btn">Salir</button>
       </nav>
     </div>
   </header>

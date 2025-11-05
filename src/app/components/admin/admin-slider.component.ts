@@ -1,110 +1,229 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { SliderService } from '../../core/services/slider.service';
+import { SliderImagen } from '../../models/slider-imagen.model';
 
 @Component({
   selector: 'app-admin-slider',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div class="admin-slider">
-      <h2>Configurar Slider de Portada</h2>
-      <p>Definí hasta 4 URLs de imágenes para el fondo de la portada. Se guardan en el navegador (localStorage), no en la base de datos.</p>
+    <div class="admin-section">
+      <div class="section-header">
+        <h2>Gestión de Sliders</h2>
+        <button (click)="toggleForm()" class="btn btn-primary">
+          {{ showForm ? 'Cancelar' : 'Nuevo Slider' }}
+        </button>
+      </div>
 
-      <form [formGroup]="form" (ngSubmit)="save()" class="slider-form">
-        <div class="field">
-          <label>Imagen 1</label>
-          <input type="url" formControlName="img1" placeholder="https://..." />
-        </div>
-        <div class="preview" *ngIf="form.value.img1">
-          <img [src]="form.value.img1" alt="Imagen 1" />
-        </div>
+      <!-- Formulario -->
+      <div class="form-container" *ngIf="showForm">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" class="form-control" formControlName="titulo">
+            </div>
+            <div class="form-group">
+              <label>Orden</label>
+              <input type="number" class="form-control" formControlName="orden" min="0">
+            </div>
+          </div>
 
-        <div class="field">
-          <label>Imagen 2</label>
-          <input type="url" formControlName="img2" placeholder="https://..." />
-        </div>
-        <div class="preview" *ngIf="form.value.img2">
-          <img [src]="form.value.img2" alt="Imagen 2" />
-        </div>
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea rows="3" class="form-control" formControlName="descripcion"></textarea>
+          </div>
 
-        <div class="field">
-          <label>Imagen 3</label>
-          <input type="url" formControlName="img3" placeholder="https://..." />
-        </div>
-        <div class="preview" *ngIf="form.value.img3">
-          <img [src]="form.value.img3" alt="Imagen 3" />
-        </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Imagen (URL)</label>
+              <input type="url" class="form-control" formControlName="imagen" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label>Enlace (URL opcional)</label>
+              <input type="url" class="form-control" formControlName="enlace" placeholder="https://...">
+            </div>
+          </div>
 
-        <div class="field">
-          <label>Imagen 4</label>
-          <input type="url" formControlName="img4" placeholder="https://..." />
-        </div>
-        <div class="preview" *ngIf="form.value.img4">
-          <img [src]="form.value.img4" alt="Imagen 4" />
-        </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Fecha Inicio</label>
+              <input type="date" class="form-control" formControlName="fechaInicio">
+            </div>
+            <div class="form-group">
+              <label>Fecha Fin</label>
+              <input type="date" class="form-control" formControlName="fechaFin">
+            </div>
+            <div class="form-group">
+              <label>Activo</label>
+              <select class="form-control" formControlName="activo">
+                <option [value]="true">Sí</option>
+                <option [value]="false">No</option>
+              </select>
+            </div>
+          </div>
 
-        <div class="actions">
-          <button type="submit">Guardar</button>
-          <button type="button" (click)="clear()" class="secondary">Vaciar</button>
-        </div>
-      </form>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-success" [disabled]="!form.valid || loading">
+              {{ editingId ? 'Actualizar' : 'Crear' }}
+            </button>
+            <button type="button" (click)="resetForm()" class="btn btn-secondary">Limpiar</button>
+          </div>
+        </form>
+      </div>
 
-      <div class="help">
-        <p>Tip: Podés usar imágenes públicas de tus ABMs (por ejemplo, la URL de una instalación o evento) o cualquier URL válida.</p>
+      <!-- Listado -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Orden</th>
+              <th>Activo</th>
+              <th>Vigencia</th>
+              <th>Imagen</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of sliders()">
+              <td>{{ s.titulo || '-' }}</td>
+              <td>{{ s.orden ?? '-' }}</td>
+              <td>{{ s.activo ? 'Sí' : 'No' }}</td>
+              <td>
+                <span *ngIf="s.fechaInicio">{{ s.fechaInicio }}</span>
+                <span *ngIf="s.fechaFin"> - {{ s.fechaFin }}</span>
+              </td>
+              <td>
+                <img *ngIf="s.imagen" [src]="s.imagen" alt="Imagen" width="60" height="40" style="object-fit: cover; border-radius: 4px;" />
+              </td>
+              <td>
+                <button class="btn btn-sm btn-warning" (click)="edit(s)">Editar</button>
+                <button class="btn btn-sm btn-danger" (click)="remove(s.id!)">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   `,
   styles: [`
-    .admin-slider { max-width: 800px; margin: 0 auto; }
-    .slider-form { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-    .field label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
-    .field input { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--color-border); border-radius: 6px; }
-    .preview { width: 100%; height: 160px; overflow: hidden; border-radius: 8px; border: 1px solid var(--color-border); }
-    .preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .actions { display: flex; gap: 1rem; margin-top: 0.5rem; }
-    .actions button { padding: 0.6rem 1rem; border-radius: 6px; border: none; cursor: pointer; background: var(--color-primary); color: white; }
-    .actions button.secondary { background: var(--color-secondary); }
-    .help { margin-top: 1rem; color: #3f4b3f; font-size: 0.95rem; }
+    .admin-section { padding: 2rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .form-container { background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+    .form-control { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; }
+    .form-actions { display: flex; gap: 1rem; margin-top: 1rem; }
+    .btn { padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+    .btn-primary { background: #007bff; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-warning { background: #ffc107; color: #212529; }
+    .btn-danger { background: #dc3545; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
+    .table-container { overflow-x: auto; }
+    .table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+    .table th, .table td { padding: 1rem; text-align: left; border-bottom: 1px solid #dee2e6; }
+    .table th { background: #f8f9fa; font-weight: 600; }
+    @media (max-width: 768px) {
+      .admin-section { padding: 1rem; }
+      .form-actions { flex-direction: column; }
+      .btn { width: 100%; }
+    }
   `]
 })
-export class AdminSliderComponent {
+export class AdminSliderComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private sliderSrv = inject(SliderService);
+
+  sliders = signal<SliderImagen[]>([]);
+  showForm = false;
+  loading = false;
+  editingId: number | null = null;
 
   form = this.fb.group({
-    img1: [''],
-    img2: [''],
-    img3: [''],
-    img4: ['']
+    titulo: [''],
+    descripcion: [''],
+    imagen: ['', Validators.required],
+    enlace: [''],
+    orden: [0, [Validators.min(0)]],
+    activo: [true],
+    fechaInicio: [''],
+    fechaFin: ['']
   });
 
-  constructor() {
-    this.loadFromStorage();
+  ngOnInit(): void {
+    this.load();
   }
 
-  private loadFromStorage() {
-    try {
-      const raw = localStorage.getItem('landingSliderImages');
-      const arr = raw ? JSON.parse(raw) : [];
-      if (Array.isArray(arr)) {
-        const [img1, img2, img3, img4] = arr;
-        this.form.patchValue({ img1: img1 || '', img2: img2 || '', img3: img3 || '', img4: img4 || '' });
+  toggleForm() {
+    this.showForm = !this.showForm;
+    if (!this.showForm) this.resetForm();
+  }
+
+  load() {
+    this.sliderSrv.getAll().subscribe({
+      next: (list) => this.sliders.set(list ?? []),
+      error: (e) => console.error('Error cargando sliders:', e)
+    });
+  }
+
+  onSubmit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.loading = true;
+    const data = this.form.value as Partial<SliderImagen>;
+    const op = this.editingId ? this.sliderSrv.update(this.editingId, data) : this.sliderSrv.create(data);
+    op.subscribe({
+      next: () => {
+        this.loading = false;
+        this.load();
+        this.resetForm();
+        this.showForm = false;
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Error guardando slider:', error);
+        let msg = 'Error al guardar el slider';
+        if (error?.status === 403) msg = 'No tienes permisos para crear/editar sliders. Necesitas ser ADMIN.';
+        else if (error?.status === 400) msg = 'Datos inválidos. Verifica los campos.';
+        else if (error?.error?.message) msg = error.error.message;
+        alert(msg);
       }
-    } catch {}
+    });
   }
 
-  save() {
-    const { img1, img2, img3, img4 } = this.form.value as any;
-    const arr = [img1, img2, img3, img4].filter((u) => !!u).slice(0, 4);
-    localStorage.setItem('landingSliderImages', JSON.stringify(arr));
-    // Notificar a otras pestañas / componentes
-    window.dispatchEvent(new StorageEvent('storage', { key: 'landingSliderImages', newValue: JSON.stringify(arr) } as any));
-    alert('Slider guardado en el navegador.');
+  edit(s: SliderImagen) {
+    this.editingId = s.id ?? null;
+    this.form.patchValue({
+      titulo: s.titulo || '',
+      descripcion: s.descripcion || '',
+      imagen: s.imagen || '',
+      enlace: s.enlace || '',
+      orden: s.orden ?? 0,
+      activo: !!s.activo,
+      fechaInicio: s.fechaInicio || '',
+      fechaFin: s.fechaFin || ''
+    });
+    this.showForm = true;
   }
 
-  clear() {
-    localStorage.removeItem('landingSliderImages');
-    this.form.reset({ img1: '', img2: '', img3: '', img4: '' });
-    window.dispatchEvent(new StorageEvent('storage', { key: 'landingSliderImages', newValue: null } as any));
+  remove(id: number) {
+    if (!confirm('¿Eliminar este slider?')) return;
+    this.sliderSrv.delete(id).subscribe({
+      next: () => this.load(),
+      error: (e) => console.error('Error eliminando slider:', e)
+    });
+  }
+
+  resetForm() {
+    this.editingId = null;
+    this.form.reset({ activo: true, orden: 0 });
   }
 }

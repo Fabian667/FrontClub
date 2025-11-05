@@ -11,6 +11,7 @@ import { AdminSliderComponent } from './components/admin/admin-slider.component'
 import { AdminUsuariosComponent } from './components/admin/admin-usuarios.component';
 import { AdminReservasComponent } from './components/admin/admin-reservas.component';
 import { AdminContactoComponent } from './components/admin/admin-contacto.component';
+import { AdminInformacionComponent } from './components/admin/admin-informacion.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -28,7 +29,8 @@ export const routes: Routes = [
       { path: 'slider', component: AdminSliderComponent },
       { path: 'usuarios', component: AdminUsuariosComponent },
       { path: 'reservas', component: AdminReservasComponent },
-      { path: 'contacto', component: AdminContactoComponent }
+      { path: 'contacto', component: AdminContactoComponent },
+      { path: 'informacion', component: AdminInformacionComponent }
     ]
   }
 ];

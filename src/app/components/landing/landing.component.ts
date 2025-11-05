@@ -2,11 +2,14 @@ import { Component, inject, signal, OnInit, effect, PLATFORM_ID, Inject } from '
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActividadService } from '../../core/services/actividad.service';
 import { InstalacionService } from '../../core/services/instalacion.service';
 import { EventoService } from '../../core/services/evento.service';
 import { NoticiaService } from '../../core/services/noticia.service';
 import { SliderService } from '../../core/services/slider.service';
+import { InformacionService } from '../../core/services/informacion.service';
+import { Informacion } from '../../models/informacion.model';
 import { ReservaService } from '../../core/services/reserva.service';
 import { EmailService, ContactMessagePayload } from '../../core/services/email.service';
 
@@ -16,7 +19,7 @@ interface ContactInfo {
   email?: string;
   facebook?: string;
   instagram?: string;
-  mapsUrl?: string;
+  mapsUrl?: string | SafeResourceUrl;
 }
 
 @Component({
@@ -36,6 +39,8 @@ export class LandingComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
   private emailSrv = inject(EmailService);
   private sliderSrv = inject(SliderService);
+  private informacionSrv = inject(InformacionService);
+  private sanitizer = inject(DomSanitizer);
 
   isLoggedIn = signal<boolean>(false);
 
@@ -96,9 +101,9 @@ export class LandingComponent implements OnInit {
 
   private loadLandingSliders() {
     this.sliderSrv.getActivos().subscribe({
-      next: (list) => {
+      next: async (list) => {
         const now = new Date();
-        const imgs = (list || [])
+        const urls = (list || [])
           .filter((s) => (s.seccion ?? 'landing') === 'landing')
           .filter((s) => s.activo !== false)
           .filter((s) => {
@@ -109,16 +114,34 @@ export class LandingComponent implements OnInit {
           .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
           .map((s) => s.imagen)
           .filter((url) => !!url);
-        this.landingSliders.set(imgs);
-        if (imgs.length > 0) {
+
+        // Preload verificando que carguen correctamente; descartamos las que fallen
+        const valid = await this.preloadAndFilter(urls);
+        this.landingSliders.set(valid);
+
+        if (valid.length > 0) {
           this.sliderIndex = 0;
-          this.backgroundStyle.set(`url(${imgs[0]})`);
+          this.backgroundStyle.set(`url(${valid[0]})`);
+        } else {
+          // Fallback seguro: fondo por defecto (gradiente)
+          this.backgroundStyle.set('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
         }
       },
       error: () => {
-        // en error, dejamos el fondo por defecto o el de localStorage
+        // en error, dejamos el fondo por defecto
+        this.backgroundStyle.set('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
       }
     });
+  }
+
+  private preloadAndFilter(urls: string[]): Promise<string[]> {
+    const loaders = urls.map((url) => new Promise<string>((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(url);
+      img.onerror = () => resolve(''); // marcar inválida
+      img.src = url;
+    }));
+    return Promise.all(loaders).then((res) => res.filter((u) => !!u));
   }
 
   private loadPublic() {
@@ -130,6 +153,30 @@ export class LandingComponent implements OnInit {
   }
 
   private loadContactInfo() {
+    // Primero intento cargar desde la API pública de Información
+    this.informacionSrv.getAll().subscribe({
+      next: (items: Informacion[]) => {
+        const info = (items && items.length > 0) ? items[0] : undefined;
+        if (info) {
+          const mapped = this.mapInformacionToContact(info);
+          this.contactInfo.set(mapped);
+          // Además, si estamos en browser, persistimos como respaldo
+          if (isPlatformBrowser(this.platformId)) {
+            try { localStorage.setItem('siteContactInfo', JSON.stringify(mapped)); } catch {}
+          }
+        } else {
+          // Fallback a localStorage si no hay datos
+          this.loadContactInfoFromLocalStorage();
+        }
+      },
+      error: () => {
+        // Fallback en caso de error de red/API
+        this.loadContactInfoFromLocalStorage();
+      }
+    });
+  }
+
+  private loadContactInfoFromLocalStorage() {
     if (isPlatformBrowser(this.platformId)) {
       try {
         const raw = localStorage.getItem('siteContactInfo');
@@ -138,7 +185,34 @@ export class LandingComponent implements OnInit {
       } catch {
         this.contactInfo.set({});
       }
+    } else {
+      this.contactInfo.set({});
     }
+  }
+
+  private mapInformacionToContact(info: Informacion): ContactInfo {
+    const latRaw: any = (info as any).mapaLatitud;
+    const lngRaw: any = (info as any).mapaLongitud;
+    const lat = typeof latRaw === 'string' ? parseFloat(latRaw) : latRaw;
+    const lng = typeof lngRaw === 'string' ? parseFloat(lngRaw) : lngRaw;
+    let mapsUrl: string | SafeResourceUrl | undefined;
+    if (Number.isFinite(lat) && Number.isFinite(lng)) {
+      const embed = `https://maps.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}&z=15&hl=es&output=embed`;
+      mapsUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embed);
+    } else if (info.direccion) {
+      const q = encodeURIComponent(info.direccion);
+      const embed = `https://maps.google.com/maps?q=${q}&z=15&hl=es&output=embed`;
+      mapsUrl = this.sanitizer.bypassSecurityTrustResourceUrl(embed);
+    }
+
+    return {
+      address: info.direccion,
+      phone: info.telefono || info.telefonoAlternativo || info.whatsapp,
+      email: info.email,
+      facebook: info.facebook || undefined,
+      instagram: info.instagram || undefined,
+      mapsUrl
+    };
   }
 
   logout() {

@@ -31,6 +31,7 @@ import { AuthService } from '../../core/services/auth.service';
           <a routerLink="/admin/usuarios" routerLinkActive="active" *ngIf="!isSocio">Usuarios</a>
           <a routerLink="/admin/reservas" routerLinkActive="active" (click)="closeMenu()">Reservas</a>
           <a routerLink="/admin/slider" routerLinkActive="active" *ngIf="!isSocio" (click)="closeMenu()">Slider</a>
+          <a routerLink="/admin/informacion" routerLinkActive="active" *ngIf="!isSocio" (click)="closeMenu()">Información</a>
           <button (click)="logout(); closeMenu()" class="logout-btn">Salir</button>
         </div>
       </nav>

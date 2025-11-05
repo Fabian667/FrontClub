@@ -1,0 +1,36 @@
+import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
+
+@Injectable({ providedIn: 'root' })
+export class PingService {
+  /**
+   * Envía una solicitud liviana al backend para mantenerlo activo.
+   * Usa fetch con `no-cors` para evitar problemas de CORS en producción.
+   */
+  ping(): void {
+    const url = this.getPingUrl();
+    try {
+      fetch(url, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-store'
+      }).catch(() => {});
+    } catch {
+      // Silenciar cualquier error; el objetivo es sólo "despertar" el backend
+    }
+  }
+
+  private getPingUrl(): string {
+    const api = environment.apiUrl || '';
+    if (/^https?:\/\//.test(api)) {
+      try {
+        const origin = new URL(api).origin;
+        return origin + '/';
+      } catch {
+        return 'https://backclub.onrender.com/';
+      }
+    }
+    // En desarrollo, usar el proxy en /api para alcanzar el backend
+    return '/api';
+  }
+}

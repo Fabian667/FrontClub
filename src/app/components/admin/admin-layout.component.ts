@@ -2,11 +2,12 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { NotificationBannerComponent } from '../shared/notification-banner.component';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationBannerComponent],
   template: `
     <div class="admin-layout">
       <nav class="admin-nav">
@@ -36,6 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
         </div>
       </nav>
       <main class="admin-content">
+        <app-notification-banner></app-notification-banner>
         <router-outlet></router-outlet>
       </main>
     </div>

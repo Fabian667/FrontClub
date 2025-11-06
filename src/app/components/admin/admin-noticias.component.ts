@@ -5,11 +5,13 @@ import { NoticiaService } from '../../core/services/noticia.service';
 import { UploadService } from '../../core/services/upload.service';
 import { Noticia } from '../../models/noticia.model';
 import { finalize } from 'rxjs/operators';
+import { NotificationService } from '../../core/services/notification.service';
+import { FallbackImageDirective } from '../shared/fallback-image.directive';
 
 @Component({
   selector: 'app-admin-noticias',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FallbackImageDirective],
   template: `
     <div class="admin-section">
       <div class="section-header">
@@ -55,7 +57,7 @@ import { finalize } from 'rxjs/operators';
             <label>Imagen</label>
             <div class="image-upload">
               <div class="preview" *ngIf="imagenPreview()">
-                <img [src]="imagenPreview()" alt="Preview">
+        <img [src]="imagenPreview()" alt="Preview" appFallbackImage>
                 <button type="button" class="remove-image" (click)="removeImage()">&times;</button>
               </div>
               <div class="upload-area" *ngIf="!imagenPreview()"
@@ -104,7 +106,7 @@ import { finalize } from 'rxjs/operators';
             <tr *ngFor="let n of noticias()">
               <td>
                 <div class="d-flex align-items-center">
-                  <img *ngIf="n.imagenUrl" [src]="n.imagenUrl" class="table-image" [alt]="n.titulo">
+        <img *ngIf="n.imagenUrl" [src]="n.imagenUrl" class="table-image" [alt]="n.titulo" appFallbackImage>
                   {{ n.titulo }}
                 </div>
               </td>
@@ -439,6 +441,7 @@ export class AdminNoticiasComponent implements OnInit {
   editingId: number | null = null;
 
   private uploadSrv = inject(UploadService);
+  private notify = inject(NotificationService);
 
   onImageSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -535,6 +538,7 @@ export class AdminNoticiasComponent implements OnInit {
         this.load();
         this.resetForm();
         this.showForm = false;
+        this.notify.success('Noticia guardada correctamente');
       },
       error: (error) => {
         this.loading = false;
@@ -560,7 +564,7 @@ export class AdminNoticiasComponent implements OnInit {
   remove(id: number) {
     if (!confirm('¿Eliminar esta noticia?')) return;
     this.noticiaService.delete(id).subscribe({
-      next: () => this.load(),
+      next: () => { this.load(); this.notify.success('Noticia eliminada'); },
       error: (e) => console.error('Error eliminando noticia:', e)
     });
   }

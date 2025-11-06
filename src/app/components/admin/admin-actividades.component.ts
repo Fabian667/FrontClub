@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActividadService } from '../../core/services/actividad.service';
 import { Actividad } from '../../models/actividad.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-actividades',
@@ -148,6 +149,8 @@ export class AdminActividadesComponent implements OnInit {
     });
   }
 
+  private notify = inject(NotificationService);
+
   ngOnInit() {
     this.loadActividades();
   }
@@ -174,6 +177,7 @@ export class AdminActividadesComponent implements OnInit {
           this.loadActividades();
           this.resetForm();
           this.showForm = false;
+          this.notify.success('Actividad guardada correctamente');
         },
         error: (error) => {
           this.loading = false;
@@ -204,7 +208,7 @@ export class AdminActividadesComponent implements OnInit {
   deleteActividad(id: number) {
     if (confirm('¿Estás seguro de eliminar esta actividad?')) {
       this.actividadService.delete(id).subscribe({
-        next: () => this.loadActividades(),
+        next: () => { this.loadActividades(); this.notify.success('Actividad eliminada'); },
         error: (error) => console.error('Error deleting actividad:', error)
       });
     }

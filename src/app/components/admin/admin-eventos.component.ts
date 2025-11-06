@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { EventoService } from '../../core/services/evento.service';
 import { Evento } from '../../models/evento.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-eventos',
@@ -137,6 +138,8 @@ export class AdminEventosComponent implements OnInit {
     });
   }
 
+  private notify = inject(NotificationService);
+
   ngOnInit() {
     this.loadEventos();
   }
@@ -163,6 +166,7 @@ export class AdminEventosComponent implements OnInit {
           this.loadEventos();
           this.resetForm();
           this.showForm = false;
+          this.notify.success('Evento guardado correctamente');
         },
         error: (error) => {
           this.loading = false;
@@ -181,7 +185,7 @@ export class AdminEventosComponent implements OnInit {
   deleteEvento(id: number) {
     if (confirm('¿Eliminar este evento?')) {
       this.eventosService.delete(id).subscribe({
-        next: () => this.loadEventos(),
+        next: () => { this.loadEventos(); this.notify.success('Evento eliminado'); },
         error: (error) => console.error('Error deleting evento:', error)
       });
     }

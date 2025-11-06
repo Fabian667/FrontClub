@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { SliderService } from '../../core/services/slider.service';
 import { SliderImagen } from '../../models/slider-imagen.model';
+import { NotificationService } from '../../core/services/notification.service';
+import { FallbackImageDirective } from '../shared/fallback-image.directive';
 
 @Component({
   selector: 'app-admin-slider',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FallbackImageDirective],
   template: `
     <div class="admin-section">
       <div class="section-header">
@@ -109,7 +111,7 @@ import { SliderImagen } from '../../models/slider-imagen.model';
                 <span *ngIf="s.fechaFin"> - {{ s.fechaFin }}</span>
               </td>
               <td>
-                <img *ngIf="s.imagen" [src]="s.imagen" alt="Imagen" width="60" height="40" style="object-fit: cover; border-radius: 4px;" />
+            <img *ngIf="s.imagen" [src]="s.imagen" alt="Imagen" width="60" height="40" style="object-fit: cover; border-radius: 4px;" appFallbackImage />
               </td>
               <td>
                 <button class="btn btn-sm btn-warning" (click)="edit(s)">Editar</button>
@@ -151,6 +153,7 @@ import { SliderImagen } from '../../models/slider-imagen.model';
 export class AdminSliderComponent implements OnInit {
   private fb = inject(FormBuilder);
   private sliderSrv = inject(SliderService);
+  private notify = inject(NotificationService);
 
   sliders = signal<SliderImagen[]>([]);
   showForm = false;
@@ -199,6 +202,7 @@ export class AdminSliderComponent implements OnInit {
         this.load();
         this.resetForm();
         this.showForm = false;
+        this.notify.success('Slider guardado correctamente');
       },
       error: (error) => {
         this.loading = false;
@@ -231,7 +235,7 @@ export class AdminSliderComponent implements OnInit {
   remove(id: number) {
     if (!confirm('¿Eliminar este slider?')) return;
     this.sliderSrv.delete(id).subscribe({
-      next: () => this.load(),
+      next: () => { this.load(); this.notify.success('Slider eliminado'); },
       error: (e) => console.error('Error eliminando slider:', e)
     });
   }

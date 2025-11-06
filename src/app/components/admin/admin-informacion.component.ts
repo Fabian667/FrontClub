@@ -136,7 +136,7 @@ import { NotificationService } from '../../core/services/notification.service';
                   <img src="/icons/instagram.svg" alt="Instagram" width="24" height="24" />
                 </a>
                 <!-- WhatsApp -->
-                <a *ngIf="info.whatsapp" [href]="'https://wa.me/' + ((info.whatsapp || '').replace(/[^0-9]/g, ''))" target="_blank" rel="noopener" title="WhatsApp"
+                <a *ngIf="info.whatsapp" [href]="getWhatsappUrl(info.whatsapp)" target="_blank" rel="noopener noreferrer" title="WhatsApp"
                    style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;margin-right:6px;">
                   <img src="/icons/whatsapp.svg" alt="WhatsApp" width="24" height="24" />
                 </a>
@@ -281,5 +281,11 @@ export class AdminInformacionComponent implements OnInit {
 
   cancel() {
     this.showForm = false;
+  }
+
+  // Construye una URL válida de WhatsApp evitando expresiones complejas en el template
+  getWhatsappUrl(value: string | null | undefined): string {
+    const digits = (value ?? '').replace(/\D+/g, '');
+    return digits ? `https://wa.me/${digits}` : '';
   }
 }

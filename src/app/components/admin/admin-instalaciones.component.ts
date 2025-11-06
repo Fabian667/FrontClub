@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { InstalacionService } from '../../core/services/instalacion.service';
 import { Instalacion } from '../../models/instalacion.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-instalaciones',
@@ -131,6 +132,8 @@ export class AdminInstalacionesComponent implements OnInit {
     });
   }
 
+  private notify = inject(NotificationService);
+
   ngOnInit() {
     this.loadInstalaciones();
   }
@@ -157,6 +160,7 @@ export class AdminInstalacionesComponent implements OnInit {
           this.loadInstalaciones();
           this.resetForm();
           this.showForm = false;
+          this.notify.success('Instalación guardada correctamente');
         },
         error: (error) => {
           this.loading = false;
@@ -175,7 +179,7 @@ export class AdminInstalacionesComponent implements OnInit {
   deleteInstalacion(id: number) {
     if (confirm('¿Eliminar esta instalación?')) {
       this.instalacionesService.delete(id).subscribe({
-        next: () => this.loadInstalaciones(),
+        next: () => { this.loadInstalaciones(); this.notify.success('Instalación eliminada'); },
         error: (error) => console.error('Error deleting instalacion:', error)
       });
     }

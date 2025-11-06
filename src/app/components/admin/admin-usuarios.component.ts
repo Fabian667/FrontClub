@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { UsuarioService } from '../../core/services/usuario.service';
 import { Usuario } from '../../models/usuario.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-usuarios',
@@ -71,6 +72,7 @@ import { Usuario } from '../../models/usuario.model';
 export class AdminUsuariosComponent {
   private fb = inject(FormBuilder);
   private usuariosSrv = inject(UsuarioService);
+  private notify = inject(NotificationService);
 
   usuarios = signal<Usuario[]>([]);
   editId: number | null = null;
@@ -92,9 +94,9 @@ export class AdminUsuariosComponent {
     const payload: any = this.form.value;
     if (!payload.password) { delete payload.password; }
     if (this.editId) {
-      this.usuariosSrv.update(this.editId, payload).subscribe({ next: () => { this.reset(); this.load(); } });
+      this.usuariosSrv.update(this.editId, payload).subscribe({ next: () => { this.reset(); this.load(); this.notify.success('Usuario actualizado correctamente'); } });
     } else {
-      this.usuariosSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); } });
+      this.usuariosSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); this.notify.success('Usuario creado correctamente'); } });
     }
   }
 
@@ -105,7 +107,7 @@ export class AdminUsuariosComponent {
 
   remove(u: Usuario) {
     if (!confirm('¿Eliminar usuario?')) return;
-    this.usuariosSrv.delete(u.id).subscribe({ next: () => this.load() });
+    this.usuariosSrv.delete(u.id).subscribe({ next: () => { this.load(); this.notify.success('Usuario eliminado'); } });
   }
 
   reset() { this.editId = null; this.form.reset({ nombre: '', email: '', tipoCuenta: 'socio', password: '' }); }

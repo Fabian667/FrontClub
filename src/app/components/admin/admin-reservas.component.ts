@@ -6,6 +6,7 @@ import { Reserva, ReservaEstado } from '../../models/reserva.model';
 import { AuthService } from '../../core/services/auth.service';
 import { InstalacionService } from '../../core/services/instalacion.service';
 import { Instalacion } from '../../models/instalacion.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-reservas',
@@ -139,6 +140,7 @@ export class AdminReservasComponent {
   private reservasSrv = inject(ReservaService);
   private auth = inject(AuthService);
   private instalacionesSrv = inject(InstalacionService);
+  private notify = inject(NotificationService);
 
   reservas = signal<Reserva[]>([]);
   instalaciones = signal<Instalacion[]>([]);
@@ -226,7 +228,7 @@ export class AdminReservasComponent {
       payload.usuario_id = this.currentUserId;
     }
     // El backend no expone actualización; siempre creamos nueva reserva
-    this.reservasSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); } });
+    this.reservasSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); this.notify.success('Reserva creada correctamente'); } });
   }
 
   edit(r: Reserva) {
@@ -248,7 +250,7 @@ export class AdminReservasComponent {
 
   remove(r: Reserva) {
     if (!confirm('¿Eliminar reserva?')) return;
-    this.reservasSrv.delete(r.id).subscribe({ next: () => this.load() });
+    this.reservasSrv.delete(r.id).subscribe({ next: () => { this.load(); this.notify.success('Reserva eliminada'); } });
   }
 
   reset() {

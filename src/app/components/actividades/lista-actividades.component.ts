@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActividadService } from '../../core/services/actividad.service';
 import { Actividad } from '../../models/actividad.model';
 import { UploadService } from '../../core/services/upload.service';
+import { FallbackImageDirective } from '../shared/fallback-image.directive';
 
 @Component({
   selector: 'app-lista-actividades',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FallbackImageDirective],
   templateUrl: './lista-actividades.component.html',
   styleUrl: './lista-actividades.component.css'
 })

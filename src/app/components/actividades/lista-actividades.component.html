@@ -11,6 +11,6 @@
   <input type="file" (change)="onFileSelected($event)" />
   <div *ngIf="imagenSubida() as img">
     <p>Imagen subida:</p>
-    <img [src]="img" alt="imagen subida" width="200" />
+    <img [src]="img" alt="imagen subida" width="200" appFallbackImage />
   </div>
 </div>

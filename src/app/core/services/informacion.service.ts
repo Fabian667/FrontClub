@@ -48,40 +48,42 @@ export class InformacionService {
   }
 
   private toApi(model: Partial<Informacion>): any {
-    return {
-      id: model.id,
-      nombre_club: model.nombreClub,
-      descripcion: model.descripcion,
-      email: model.email,
-      telefono: model.telefono,
-      telefono_alternativo: model.telefonoAlternativo,
-      whatsapp: model.whatsapp,
-      direccion: model.direccion,
-      ciudad: model.ciudad,
-      provincia: model.provincia,
-      codigo_postal: model.codigoPostal,
-      horario_atencion: model.horarioAtencion,
-      facebook: model.facebook,
-      instagram: model.instagram,
-      twitter: model.twitter,
-      youtube: model.youtube,
-      tiktok: model.tiktok,
-      linkedin: model.linkedin,
-      website: model.website,
-      logo: model.logo,
-      imagen_principal: model.imagenPrincipal,
-      imagen_galeria_1: model.imagenGaleria1,
-      imagen_galeria_2: model.imagenGaleria2,
-      imagen_galeria_3: model.imagenGaleria3,
-      imagen_galeria_4: model.imagenGaleria4,
-      imagen_galeria_5: model.imagenGaleria5,
-      mapa_latitud: model.mapaLatitud,
-      mapa_longitud: model.mapaLongitud,
-      fundacion: model.fundacion,
-      mision: model.mision,
-      vision: model.vision,
-      fecha_actualizacion: model.fechaActualizacion,
-    };
+    // Enviamos el payload en camelCase y sólo con propiedades definidas,
+    // consistente con el resto de servicios del proyecto.
+    const body: any = {};
+    if (model.id != null) body.id = model.id;
+    if (model.nombreClub != null) body.nombreClub = model.nombreClub;
+    if (model.descripcion != null) body.descripcion = model.descripcion;
+    if (model.email != null) body.email = model.email;
+    if (model.telefono != null) body.telefono = model.telefono;
+    if (model.telefonoAlternativo != null) body.telefonoAlternativo = model.telefonoAlternativo;
+    if (model.whatsapp != null) body.whatsapp = model.whatsapp;
+    if (model.direccion != null) body.direccion = model.direccion;
+    if (model.ciudad != null) body.ciudad = model.ciudad;
+    if (model.provincia != null) body.provincia = model.provincia;
+    if (model.codigoPostal != null) body.codigoPostal = model.codigoPostal;
+    if (model.horarioAtencion != null) body.horarioAtencion = model.horarioAtencion;
+    if (model.facebook != null) body.facebook = model.facebook;
+    if (model.instagram != null) body.instagram = model.instagram;
+    if (model.twitter != null) body.twitter = model.twitter;
+    if (model.youtube != null) body.youtube = model.youtube;
+    if (model.tiktok != null) body.tiktok = model.tiktok;
+    if (model.linkedin != null) body.linkedin = model.linkedin;
+    if (model.website != null) body.website = model.website;
+    if (model.logo != null) body.logo = model.logo;
+    if (model.imagenPrincipal != null) body.imagenPrincipal = model.imagenPrincipal;
+    if (model.imagenGaleria1 != null) body.imagenGaleria1 = model.imagenGaleria1;
+    if (model.imagenGaleria2 != null) body.imagenGaleria2 = model.imagenGaleria2;
+    if (model.imagenGaleria3 != null) body.imagenGaleria3 = model.imagenGaleria3;
+    if (model.imagenGaleria4 != null) body.imagenGaleria4 = model.imagenGaleria4;
+    if (model.imagenGaleria5 != null) body.imagenGaleria5 = model.imagenGaleria5;
+    if (model.mapaLatitud != null) body.mapaLatitud = model.mapaLatitud;
+    if (model.mapaLongitud != null) body.mapaLongitud = model.mapaLongitud;
+    if (model.fundacion != null) body.fundacion = model.fundacion;
+    if (model.mision != null) body.mision = model.mision;
+    if (model.vision != null) body.vision = model.vision;
+    if (model.fechaActualizacion != null) body.fechaActualizacion = model.fechaActualizacion;
+    return body;
   }
 
   getAll(): Observable<Informacion[]> {

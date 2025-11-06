@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { InformacionService } from '../../core/services/informacion.service';
 import { Informacion } from '../../models/informacion.model';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-informacion',
@@ -161,6 +162,7 @@ export class AdminInformacionComponent implements OnInit {
   showForm = false;
   loading = false;
   editingId: number | null = null;
+  private notify = inject(NotificationService);
 
   constructor(private infoService: InformacionService, private fb: FormBuilder) {
     this.infoForm = this.fb.group({
@@ -232,14 +234,31 @@ export class AdminInformacionComponent implements OnInit {
       ? this.infoService.update(this.editingId, payload)
       : this.infoService.create(payload);
     obs.subscribe({
-      next: () => { this.loading = false; this.showForm = false; this.load(); },
-      error: () => { this.loading = false; }
+      next: () => {
+        this.loading = false;
+        // Evitar NG0100 programando cambios de estado tras el ciclo actual
+        setTimeout(() => {
+          this.showForm = false;
+          this.load();
+          this.notify.success('Información guardada correctamente');
+        }, 0);
+      },
+      error: (err) => { this.loading = false; this.notify.error('No se pudo guardar la información'); console.error('Error guardando información:', err); }
     });
   }
 
   remove(id: number) {
     if (!confirm('¿Eliminar este registro?')) return;
-    this.infoService.delete(id).subscribe({ next: () => this.load() });
+    this.infoService.delete(id).subscribe({
+      next: () => {
+        // Evitar NG0100 programando la recarga tras el ciclo actual
+        setTimeout(() => {
+          this.load();
+          this.notify.success('Información eliminada');
+        }, 0);
+      },
+      error: (err) => { this.notify.error('No se pudo eliminar la información'); console.error('Error eliminando información:', err); }
+    });
   }
 
   cancel() {

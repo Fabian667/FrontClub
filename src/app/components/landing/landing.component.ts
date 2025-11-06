@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule, NgForm } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { FallbackImageDirective } from '../shared/fallback-image.directive';
 import { ActividadService } from '../../core/services/actividad.service';
 import { InstalacionService } from '../../core/services/instalacion.service';
 import { EventoService } from '../../core/services/evento.service';
@@ -19,13 +20,14 @@ interface ContactInfo {
   email?: string;
   facebook?: string;
   instagram?: string;
+  whatsapp?: string;
   mapsUrl?: string | SafeResourceUrl;
 }
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, FallbackImageDirective],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.css'
 })
@@ -211,8 +213,16 @@ export class LandingComponent implements OnInit {
       email: info.email,
       facebook: info.facebook || undefined,
       instagram: info.instagram || undefined,
+      whatsapp: info.whatsapp || undefined,
       mapsUrl
     };
+  }
+
+  getWhatsappUrl(value?: string): string | undefined {
+    if (!value) return undefined;
+    const digits = String(value).replace(/[^0-9]/g, '');
+    if (!digits) return undefined;
+    return `https://wa.me/${digits}`;
   }
 
   logout() {

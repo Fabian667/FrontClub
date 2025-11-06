@@ -455,6 +455,15 @@
   filter: brightness(1.1);
 }
 
+.social-btn.whatsapp {
+  background: #25D366;
+}
+
+.social-btn.whatsapp:hover {
+  background: #1ebe57;
+  transform: translateY(-2px);
+}
+
 .map-container {
   margin-top: 0.75rem; /* menos espacio arriba del mapa */
 }

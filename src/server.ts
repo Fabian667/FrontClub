@@ -7,12 +7,38 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 import multer from 'multer';
+import { setInterval as scheduleInterval } from 'node:timers';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 const uploadsFolder = join(import.meta.dirname, '../public/uploads');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+
+/**
+ * Keepalive: realiza un GET periódico a https://backclub.onrender.com/
+ * para evitar que el backend entre en suspensión cuando no hay clientes activos.
+ */
+function scheduleKeepAlive() {
+  const url = 'https://backclub.onrender.com/';
+  const intervalMs = 5 * 60 * 1000; // 5 minutos
+
+  const ping = async () => {
+    try {
+      // Usamos fetch de Node (disponible en Node 18+) sin opciones especiales.
+      await fetch(url, { method: 'GET' });
+    } catch {
+      // Silenciamos errores para no ensuciar logs ni romper el proceso.
+    }
+  };
+
+  // Disparo inicial y programación periódica.
+  ping();
+  scheduleInterval(ping, intervalMs);
+}
+
+// Programar el keepalive al cargar el módulo.
+scheduleKeepAlive();
 
 // Servir imágenes subidas desde /public/uploads
 app.use('/uploads', express.static(uploadsFolder, { maxAge: '1y' }));

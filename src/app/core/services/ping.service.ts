@@ -30,7 +30,10 @@ export class PingService {
         return 'https://backclub.onrender.com/';
       }
     }
-    // En desarrollo, usar el proxy en /api para alcanzar el backend
-    return '/api';
+    // En desarrollo, apuntar explícitamente al origen público de Render
+    if (api.startsWith('/api')) {
+      return 'https://backclub.onrender.com/';
+    }
+    return 'https://backclub.onrender.com/';
   }
 }

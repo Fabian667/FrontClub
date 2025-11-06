@@ -533,6 +533,22 @@
   fill: white;
 }
 
+/* Usar imágenes SVG circulares en lugar de SVG inline */
+.social-btn.facebook,
+.social-btn.instagram,
+.social-btn.whatsapp {
+  background: transparent; /* el color viene del propio ícono */
+  padding: 0; /* quitar relleno para que el ícono se vea limpio */
+}
+
+.social-btn:hover { transform: translateY(-2px); }
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

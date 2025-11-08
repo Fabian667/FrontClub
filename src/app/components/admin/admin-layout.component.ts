@@ -128,7 +128,7 @@ export class AdminLayoutComponent {
   constructor(private auth: AuthService, private router: Router) {}
 
   ngOnInit() {
-    this.auth.me().subscribe({
+    this.auth.meSilenced().subscribe({
       next: (me: any) => {
         const tipo = me?.tipoCuenta || me?.tipo || localStorage.getItem('role');
         this.isSocio = (tipo === 'socio');

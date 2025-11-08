@@ -193,7 +193,7 @@ export class AdminReservasComponent {
 
   ngOnInit() {
     // Intentar obtener usuario actual y cargar instalaciones
-    this.auth.me().subscribe({
+    this.auth.meSilenced().subscribe({
       next: (me: any) => {
         this.currentUserId = me?.id ?? null;
         const tipo = me?.tipoCuenta || me?.tipo || localStorage.getItem('role');
@@ -227,8 +227,37 @@ export class AdminReservasComponent {
     if (this.isSocio && this.currentUserId) {
       payload.usuario_id = this.currentUserId;
     }
-    // El backend no expone actualización; siempre creamos nueva reserva
-    this.reservasSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); this.notify.success('Reserva creada correctamente'); } });
+    // Si estamos editando, intentar actualizar; fallback a eliminar+crear si no está soportado
+    if (this.editId) {
+      this.reservasSrv.update(this.editId, payload).subscribe({
+        next: () => { this.reset(); this.load(); this.notify.success('Reserva actualizada correctamente'); },
+        error: (err) => {
+          const status = err?.status;
+          const text = (err?.statusText || '').toLowerCase();
+          const msgBody = (err?.error?.message || err?.message || '').toLowerCase();
+          const methodNotAllowed = status === 405 || text.includes('method') || msgBody.includes('method');
+          if (methodNotAllowed || status === 404 || status === 400) {
+            // Fallback: eliminar la reserva anterior y crear una nueva con los datos editados
+            const id = this.editId;
+            this.reservasSrv.delete(id!).subscribe({
+              next: () => {
+                this.reservasSrv.create(payload).subscribe({
+                  next: () => { this.reset(); this.load(); this.notify.success('Reserva actualizada correctamente'); },
+                  error: () => { this.notify.error('No se pudo crear la reserva actualizada'); }
+                });
+              },
+              error: () => { this.notify.error('No se pudo eliminar la reserva anterior'); }
+            });
+          } else {
+            const msg = err?.error?.message || err?.error?.error || err?.message || 'Error al actualizar reserva';
+            this.notify.error(msg);
+          }
+        }
+      });
+    } else {
+      // Crear nueva reserva
+      this.reservasSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); this.notify.success('Reserva creada correctamente'); } });
+    }
   }
 
   edit(r: Reserva) {

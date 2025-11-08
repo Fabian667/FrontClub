@@ -7,8 +7,10 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       try {
         const url = req.url || '';
         const isAuth = url.includes('/auth/login') || url.includes('/auth/me') || url.includes('/auth/register');
-        if (isAuth) {
-          const status = err?.status;
+        const isAborted = (err?.name === 'AbortError') || (typeof err?.message === 'string' && err.message.includes('ERR_ABORTED'));
+        const status = err?.status;
+        // Evitar ruido por peticiones abortadas o status 0 en /auth/me durante navegación
+        if (isAuth && !isAborted && status !== 0) {
           const statusText = err?.statusText;
           const message = err?.error?.message || err?.message;
           console.error('HTTP error', { url, status, statusText, message, body: err?.error });

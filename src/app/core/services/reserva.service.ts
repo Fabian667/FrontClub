@@ -74,6 +74,11 @@ export class ReservaService {
     return this.http.post<any>(this.baseUrl, body).pipe(map((r) => this.fromApi(r)));
   }
 
+  update(id: number, reserva: Partial<Reserva>): Observable<Reserva> {
+    const body = this.toApi(reserva);
+    return this.http.put<any>(`${this.baseUrl}/${id}`, body).pipe(map((r) => this.fromApi(r)));
+  }
+
   // No está especificado un update genérico en los endpoints; añadimos cancelar.
   cancel(id: number): Observable<Reserva> {
     return this.http.put<any>(`${this.baseUrl}/${id}/cancelar`, {}).pipe(map((r) => this.fromApi(r)));

@@ -1,6 +1,9 @@
 <div class="login">
-  <h2>Iniciar sesión</h2>
-  <form [formGroup]="form" (ngSubmit)="submit()">
+  <h2 *ngIf="!showRegister()">Iniciar sesión</h2>
+  <h2 *ngIf="showRegister()">Crear cuenta</h2>
+
+  <!-- Login Form -->
+  <form *ngIf="!showRegister()" [formGroup]="form" (ngSubmit)="submit()">
     <label>Email</label>
     <input type="email" formControlName="email" />
 
@@ -8,8 +11,36 @@
     <input type="password" formControlName="password" />
 
     <button type="submit" [disabled]="loading()">Entrar</button>
-    <!-- Botón Cancelar -->
     <button type="button" class="secondary-btn" (click)="cancel()">Cancelar</button>
   </form>
+
+  <!-- Register Form -->
+  <form *ngIf="showRegister()" [formGroup]="registerForm" (ngSubmit)="submitRegister()">
+    <label>Nombre</label>
+    <input type="text" formControlName="nombre" />
+    <small class="error" *ngIf="registerForm.get('nombre')?.touched && registerForm.get('nombre')?.hasError('required')">El nombre es obligatorio</small>
+
+    <label>Apellido</label>
+    <input type="text" formControlName="apellido" />
+    <small class="error" *ngIf="registerForm.get('apellido')?.touched && registerForm.get('apellido')?.hasError('required')">El apellido es obligatorio</small>
+
+    <label>Email</label>
+    <input type="email" formControlName="email" />
+    <small class="error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('required')">El email es obligatorio</small>
+    <small class="error" *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.hasError('email')">Formato de email inválido</small>
+
+    <label>Contraseña</label>
+    <input type="password" formControlName="password" />
+    <small class="error" *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.hasError('required')">La contraseña es obligatoria</small>
+
+    <button type="submit" [disabled]="loading() || registerForm.invalid">Registrarme</button>
+    <button type="button" class="secondary-btn" (click)="showRegister.set(false)">Ya tengo cuenta</button>
+  </form>
+
+  <!-- Toggle link -->
+  <p class="toggle" *ngIf="!showRegister()">
+    ¿No tenés cuenta? <a href="#" (click)="$event.preventDefault(); showRegister.set(true)">Crear cuenta</a>
+  </p>
+
   <p class="error" *ngIf="error() as e">{{ e }}</p>
 </div>

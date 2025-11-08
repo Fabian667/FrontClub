@@ -7,6 +7,7 @@ import { provideHttpClient, withInterceptors, withFetch } from '@angular/common/
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { PingService } from './core/services/ping.service';
+import { environment } from '../environments/environment';
 
 function startPing(ping: PingService) {
   // Ejecutar inmediatamente y repetir cada 5 minutos
@@ -20,7 +21,7 @@ function startPing(ping: PingService) {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
+    ...(environment.production ? [provideBrowserGlobalErrorListeners()] : []),
     provideZonelessChangeDetection(),
     provideRouter(routes), provideClientHydration(withEventReplay()),
     provideHttpClient(withInterceptors([authInterceptor, errorInterceptor]), withFetch()),

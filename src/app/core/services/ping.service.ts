@@ -8,6 +8,8 @@ export class PingService {
    * Usa fetch con `no-cors` para evitar problemas de CORS en producción.
    */
   ping(): void {
+    // Evitar pings en desarrollo para no generar ruido en consola/HMR.
+    if (!environment.production) return;
     const url = this.getPingUrl();
     try {
       fetch(url, {

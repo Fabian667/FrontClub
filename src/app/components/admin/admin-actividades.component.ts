@@ -91,7 +91,7 @@ import { NotificationService } from '../../core/services/notification.service';
               <td>{{ actividad.descripcion }}</td>
               <td>{{ actividad.diaSemana }}</td>
               <td>{{ actividad.horaInicio }} - {{ actividad.horaFin }}</td>
-              <td>{{ '$' + actividad.precioHora }}</td>
+              <td>{{ actividad.precioHora !== null && actividad.precioHora !== undefined ? ('$' + actividad.precioHora) : '-' }}</td>
               <td>
                 <button (click)="editActividad(actividad)" class="btn btn-sm btn-warning">
                   Editar

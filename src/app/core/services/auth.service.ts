@@ -13,6 +13,7 @@ export class AuthService {
       email: credentials.email,
       password: credentials.password
     };
+    // Usar la versión simplificada (como en GitHub): devolver solo el cuerpo JSON con { token, ... }
     return this.http.post(`${this.baseUrl}/login`, payload);
   }
 

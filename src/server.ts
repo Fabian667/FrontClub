@@ -14,6 +14,9 @@ const uploadsFolder = join(import.meta.dirname, '../public/uploads');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+// Contraseña pública para mostrar en la web sin requerir petición adicional.
+// Se toma de variable de entorno PUBLIC_PASSWORD, con fallback opcional.
+const PUBLIC_PASSWORD = process.env['PUBLIC_PASSWORD'] || '10871339';
 
 /**
  * Keepalive: realiza un GET periódico a https://backclub.onrender.com/
@@ -75,9 +78,31 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then(async (response) => {
+      if (!response) return next();
+
+      // Si es HTML, inyectamos un script JSON con la contraseña pública.
+      const contentType = response.headers.get('content-type') || response.headers.get('Content-Type') || '';
+      if (contentType.includes('text/html')) {
+        const html = await response.text();
+        const injection = `<script id="pwd-data" type="application/json">${JSON.stringify({ pwd: PUBLIC_PASSWORD })}</script>`;
+        const injectedHtml = html.replace('</head>', `${injection}</head>`);
+
+        // Escribir manualmente la respuesta con los mismos headers.
+        res.status(response.status);
+        response.headers.forEach((value, key) => {
+          // Evitar content-length incorrecto; Express lo calculará.
+          if (key.toLowerCase() !== 'content-length') {
+            res.setHeader(key, value);
+          }
+        });
+        res.send(injectedHtml);
+        return;
+      }
+
+      // Para otros tipos de contenido, delegar escritura estándar.
+      return writeResponseToNodeResponse(response, res);
+    })
     .catch(next);
 });
 

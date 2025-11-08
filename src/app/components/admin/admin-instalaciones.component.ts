@@ -27,8 +27,8 @@ import { NotificationService } from '../../core/services/notification.service';
               <input type="text" formControlName="nombre" class="form-control">
             </div>
             <div class="form-group">
-              <label>Capacidad</label>
-              <input type="number" formControlName="capacidad" class="form-control" min="0">
+              <label>Tipo</label>
+              <input type="text" formControlName="tipo" class="form-control" placeholder="CANCHA, SALON, etc.">
             </div>
           </div>
 
@@ -39,17 +39,37 @@ import { NotificationService } from '../../core/services/notification.service';
 
           <div class="form-row">
             <div class="form-group">
+              <label>Capacidad Máxima</label>
+              <input type="number" formControlName="capacidadMaxima" class="form-control" min="0">
+            </div>
+            <div class="form-group">
+              <label>Precio por hora</label>
+              <input type="number" formControlName="precioHora" class="form-control" min="0" step="0.01">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Requiere aprobación</label>
+              <input type="checkbox" formControlName="requiereAprobacion" />
+            </div>
+            <div class="form-group">
+              <label>Foto (URL)</label>
+              <input type="text" formControlName="foto" class="form-control" placeholder="https://...">
+              <div *ngIf="instalacionForm.get('foto')?.value" style="margin-top:0.5rem">
+                <img [src]="instalacionForm.get('foto')?.value" alt="Preview foto" style="max-height:80px;border:1px solid #ddd;border-radius:4px" />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
               <label>Estado</label>
               <select formControlName="estado" class="form-control">
                 <option value="">Seleccionar estado</option>
-                <option value="Disponible">Disponible</option>
-                <option value="No disponible">No disponible</option>
-                <option value="Mantenimiento">Mantenimiento</option>
+                <option value="ACTIVA">ACTIVA</option>
+                <option value="INACTIVA">INACTIVA</option>
               </select>
-            </div>
-            <div class="form-group">
-              <label>Imagen (URL)</label>
-              <input type="text" formControlName="imagen" class="form-control" placeholder="https://...">
             </div>
           </div>
 
@@ -69,7 +89,11 @@ import { NotificationService } from '../../core/services/notification.service';
             <tr>
               <th>Nombre</th>
               <th>Descripción</th>
-              <th>Capacidad</th>
+              <th>Tipo</th>
+              <th>Capacidad Máxima</th>
+              <th>Precio/hora</th>
+              <th>Requiere aprobación</th>
+              <th>Foto</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -78,7 +102,13 @@ import { NotificationService } from '../../core/services/notification.service';
             <tr *ngFor="let ins of instalaciones()">
               <td>{{ ins.nombre }}</td>
               <td>{{ ins.descripcion }}</td>
-              <td>{{ ins.capacidad }}</td>
+              <td>{{ ins.tipo }}</td>
+              <td>{{ ins.capacidadMaxima }}</td>
+              <td>{{ ins.precioHora }}</td>
+              <td>{{ ins.requiereAprobacion ? 'Sí' : 'No' }}</td>
+              <td>
+                <img *ngIf="ins.foto || ins.imagen" [src]="ins.foto || ins.imagen" alt="Foto" style="height:40px;border-radius:4px" />
+              </td>
               <td>{{ ins.estado }}</td>
               <td>
                 <button (click)="editInstalacion(ins)" class="btn btn-sm btn-warning">Editar</button>
@@ -126,9 +156,12 @@ export class AdminInstalacionesComponent implements OnInit {
     this.instalacionForm = this.fb.group({
       nombre: ['', Validators.required],
       descripcion: [''],
-      capacidad: [0, [Validators.required, Validators.min(0)]],
-      estado: [''],
-      imagen: ['']
+      tipo: [''],
+      capacidadMaxima: [0, [Validators.required, Validators.min(0)]],
+      precioHora: [0, [Validators.min(0)]],
+      requiereAprobacion: [false],
+      foto: [''],
+      estado: ['']
     });
   }
 
@@ -172,7 +205,16 @@ export class AdminInstalacionesComponent implements OnInit {
 
   editInstalacion(ins: Instalacion) {
     this.editingId = ins.id!;
-    this.instalacionForm.patchValue(ins);
+    this.instalacionForm.patchValue({
+      nombre: ins.nombre,
+      descripcion: ins.descripcion,
+      tipo: ins.tipo ?? '',
+      capacidadMaxima: ins.capacidadMaxima ?? ins.capacidad ?? 0,
+      precioHora: ins.precioHora ?? 0,
+      requiereAprobacion: ins.requiereAprobacion ?? false,
+      foto: ins.foto ?? ins.imagen ?? '',
+      estado: ins.estado ?? ''
+    });
     this.showForm = true;
   }
 

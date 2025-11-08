@@ -77,7 +77,7 @@
             <div class="details" *ngIf="actividad.diaSemana || actividad.horaInicio">
               <span *ngIf="actividad.diaSemana">{{ actividad.diaSemana }}</span>
               <span *ngIf="actividad.horaInicio">{{ actividad.horaInicio }} - {{ actividad.horaFin }}</span>
-              <span *ngIf="actividad.precioHora" class="precio">${{ actividad.precioHora }}/hora</span>
+              <span *ngIf="actividad.precioHora !== null && actividad.precioHora !== undefined" class="precio">${{ actividad.precioHora }}/hora</span>
             </div>
           </div>
         </div>
@@ -100,6 +100,7 @@
             <p>{{ instalacion.descripcion }}</p>
             <div class="details" *ngIf="instalacion.capacidad">
               <span>Capacidad: {{ instalacion.capacidad }} personas</span>
+              <span *ngIf="instalacion.precioHora !== null && instalacion.precioHora !== undefined" class="precio">${{ instalacion.precioHora }}/hora</span>
             </div>
           </div>
         </div>
@@ -124,6 +125,7 @@
               <span *ngIf="evento.fecha">{{ evento.fecha }}</span>
               <span *ngIf="evento.horaInicio">{{ evento.horaInicio }} - {{ evento.horaFin }}</span>
               <span *ngIf="evento.lugar">{{ evento.lugar }}</span>
+              <span *ngIf="evento.costo !== null && evento.costo !== undefined" class="precio">${{ evento.costo }}</span>
             </div>
           </div>
         </div>
@@ -156,6 +158,14 @@
         <!-- Contact Info -->
         <div class="contact-info">
           <h3>Información de contacto</h3>
+          <!-- Contraseña pública (inyectada por SSR, sin peticiones adicionales) -->
+          <div class="info-item" *ngIf="publicPassword()">
+            <strong>Contraseña Wi‑Fi:</strong>
+            <p>
+              <code>{{ publicPassword() }}</code>
+              <button type="button" class="submit-btn" (click)="copyPassword()">Copiar</button>
+            </p>
+          </div>
           <div class="info-item" *ngIf="contactInfo().address">
             <strong>Dirección:</strong>
             <p>{{ contactInfo().address }}</p>

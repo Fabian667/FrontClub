@@ -7,4 +7,5 @@ export interface Evento {
   horaFin?: string;
   lugar?: string;
   imagen?: string;
+  costo?: number;
 }

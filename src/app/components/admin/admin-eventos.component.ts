@@ -56,6 +56,10 @@ import { NotificationService } from '../../core/services/notification.service';
             <label>Imagen (URL)</label>
             <input type="text" formControlName="imagen" class="form-control" placeholder="https://...">
           </div>
+          <div class="form-group">
+            <label>Costo</label>
+            <input type="number" formControlName="costo" class="form-control" min="0" step="0.01">
+          </div>
 
           <div class="form-actions">
             <button type="submit" class="btn btn-success" [disabled]="!eventoForm.valid || loading">
@@ -75,6 +79,7 @@ import { NotificationService } from '../../core/services/notification.service';
               <th>Fecha</th>
               <th>Horario</th>
               <th>Lugar</th>
+              <th>Costo</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -84,6 +89,7 @@ import { NotificationService } from '../../core/services/notification.service';
               <td>{{ ev.fecha }}</td>
               <td>{{ ev.horaInicio }} - {{ ev.horaFin }}</td>
               <td>{{ ev.lugar }}</td>
+              <td>{{ ev.costo !== null && ev.costo !== undefined ? ('$' + ev.costo) : '-' }}</td>
               <td>
                 <button (click)="editEvento(ev)" class="btn btn-sm btn-warning">Editar</button>
                 <button (click)="deleteEvento(ev.id!)" class="btn btn-sm btn-danger">Eliminar</button>
@@ -134,7 +140,8 @@ export class AdminEventosComponent implements OnInit {
       horaInicio: [''],
       horaFin: [''],
       lugar: [''],
-      imagen: ['']
+      imagen: [''],
+      costo: [null]
     });
   }
 

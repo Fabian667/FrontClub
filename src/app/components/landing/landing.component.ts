@@ -13,6 +13,7 @@ import { InformacionService } from '../../core/services/informacion.service';
 import { Informacion } from '../../models/informacion.model';
 import { ReservaService } from '../../core/services/reserva.service';
 import { EmailService, ContactMessagePayload } from '../../core/services/email.service';
+import { environment } from '../../../environments/environment';
 
 interface ContactInfo {
   address?: string;
@@ -51,6 +52,7 @@ export class LandingComponent implements OnInit {
   instalaciones = signal<any[]>([]);
   eventos = signal<any[]>([]);
   reservasCount = signal<number>(0);
+  publicPassword = signal<string | null>(null);
 
   backgroundStyle = signal<string>('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
   private landingSliders = signal<string[]>([]);
@@ -58,6 +60,12 @@ export class LandingComponent implements OnInit {
   contactInfo = signal<ContactInfo>({});
   // Estado del menú hamburguesa
   menuOpen = signal<boolean>(false);
+
+  // Imágenes por defecto para el slider de Landing cuando no hay datos del backend
+  private readonly DEFAULT_LANDING_SLIDER_IMAGES: string[] = [
+    'https://freeimage.host/i/KtE0UCb',
+    'https://freeimage.host/i/KtE0vje'
+  ];
 
   constructor() {
     this.loadPublic();
@@ -68,6 +76,7 @@ export class LandingComponent implements OnInit {
       // Initialize browser-only features
       this.isLoggedIn.set(!!localStorage.getItem('token'));
       this.loadContactInfo();
+      this.loadPublicPassword();
       this.updateBackgroundStyle();
       this.loadLandingSliders();
       // rotación de slider cada 6s
@@ -118,7 +127,24 @@ export class LandingComponent implements OnInit {
           .filter((url) => !!url);
 
         // Preload verificando que carguen correctamente; descartamos las que fallen
-        const valid = await this.preloadAndFilter(urls);
+        let valid = await this.preloadAndFilter(urls);
+
+        // Si no hay imágenes válidas desde backend, intentamos con localStorage
+        if (valid.length === 0 && isPlatformBrowser(this.platformId)) {
+          try {
+            const lsImgsRaw = localStorage.getItem('landingSliderImages') || '[]';
+            const lsImgs: string[] = JSON.parse(lsImgsRaw);
+            if (Array.isArray(lsImgs) && lsImgs.length > 0) {
+              valid = await this.preloadAndFilter(lsImgs);
+            }
+          } catch {}
+        }
+
+        // Si sigue vacío, usamos las imágenes por defecto declaradas arriba
+        if (valid.length === 0) {
+          valid = await this.preloadAndFilter(this.DEFAULT_LANDING_SLIDER_IMAGES);
+        }
+
         this.landingSliders.set(valid);
 
         if (valid.length > 0) {
@@ -192,6 +218,27 @@ export class LandingComponent implements OnInit {
     }
   }
 
+  private loadPublicPassword() {
+    try {
+      const el = document.getElementById('pwd-data');
+      const text = el?.textContent || '';
+      if (text) {
+        const parsed = JSON.parse(text);
+        const pwd: string | undefined = parsed?.pwd;
+        if (pwd && typeof pwd === 'string') {
+          this.publicPassword.set(pwd);
+        }
+      }
+    } catch {
+      this.publicPassword.set(null);
+    }
+
+    // Fallback en desarrollo: si no hay inyección SSR, usamos la contraseña solicitada
+    if (!this.publicPassword() && !environment.production) {
+      this.publicPassword.set('10871339');
+    }
+  }
+
   private mapInformacionToContact(info: Informacion): ContactInfo {
     const latRaw: any = (info as any).mapaLatitud;
     const lngRaw: any = (info as any).mapaLongitud;
@@ -230,6 +277,15 @@ export class LandingComponent implements OnInit {
       localStorage.removeItem('token');
     }
     this.isLoggedIn.set(false);
+  }
+
+  copyPassword() {
+    const pwd = this.publicPassword();
+    if (!pwd) return;
+    try {
+      navigator.clipboard.writeText(pwd);
+      alert('Contraseña copiada al portapapeles');
+    } catch {}
   }
 
   // Toggle del menú hamburguesa

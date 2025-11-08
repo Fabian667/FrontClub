@@ -13,6 +13,7 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <h2>ABM Usuarios</h2>
     <div class="alert" *ngIf="isUsuario">Tu perfil es Usuario: no podés crear, editar ni eliminar usuarios.</div>
+
     <form [formGroup]="form" (ngSubmit)="save()" class="form">
       <div class="row">
         <label>Nombre</label>
@@ -148,6 +149,8 @@ export class AdminUsuariosComponent {
 
   usuarios = signal<Usuario[]>([]);
   editId: number | null = null;
+  // Flag de rol para deshabilitar acciones en UI y lógica
+  isUsuario: boolean = false;
 
   form = this.fb.group({
     nombre: ['', Validators.required],
@@ -179,6 +182,17 @@ export class AdminUsuariosComponent {
       const isSocio = String(val || '').toLowerCase() === 'socio';
       this.setTipoSocioRequired(isSocio);
     });
+
+    // Determinar si el rol actual es 'usuario' para bloquear edición
+    const roleLocal = (localStorage.getItem('role') || '').toLowerCase();
+    this.isUsuario = roleLocal === 'usuario';
+    // Intento silencioso por si aún no está cargado el usuario
+    this.auth.meSilenced().subscribe({
+      next: (me) => {
+        const r = (me?.tipoCuenta || (me as any)?.tipo || '').toLowerCase();
+        if (r) this.isUsuario = r === 'usuario';
+      }
+    });
   }
 
   load() {
@@ -186,6 +200,7 @@ export class AdminUsuariosComponent {
   }
 
   save() {
+    if (this.isUsuario) { this.notify.error('Tu perfil Usuario no puede crear ni editar usuarios'); return; }
     const creating = !this.editId;
     const payload: any = { ...this.form.value };
     // sanitize
@@ -274,6 +289,7 @@ export class AdminUsuariosComponent {
   }
 
   edit(u: Usuario) {
+    if (this.isUsuario) { this.notify.error('Tu perfil Usuario no puede editar usuarios'); return; }
     this.editId = u.id;
     this.form.patchValue({ nombre: u.nombre, apellido: u.apellido || '', dni: (u as any).dni || '', telefono: (u as any).telefono || '', direccion: (u as any).direccion || '', fechaNacimiento: (u as any).fechaNacimiento || '', estado: u.estado || 'activo', email: u.email, tipoCuenta: u.tipoCuenta || 'socio', tipoSocio: (u as any).tipoSocio || '', fotoPerfil: (u as any).fotoPerfil || '', password: '' });
     this.setPasswordRequired(false);
@@ -288,6 +304,7 @@ export class AdminUsuariosComponent {
   }
 
   remove(u: Usuario) {
+    if (this.isUsuario) { this.notify.error('Tu perfil Usuario no puede eliminar usuarios'); return; }
     if (!confirm('¿Eliminar usuario?')) return;
     this.usuariosSrv.delete(u.id).subscribe({ next: () => { this.load(); this.notify.success('Usuario eliminado'); } });
   }

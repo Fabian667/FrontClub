@@ -158,14 +158,7 @@
         <!-- Contact Info -->
         <div class="contact-info">
           <h3>Información de contacto</h3>
-          <!-- Contraseña pública (inyectada por SSR, sin peticiones adicionales) -->
-          <div class="info-item" *ngIf="publicPassword()">
-            <strong>Contraseña Wi‑Fi:</strong>
-            <p>
-              <code>{{ publicPassword() }}</code>
-              <button type="button" class="submit-btn" (click)="copyPassword()">Copiar</button>
-            </p>
-          </div>
+          <!-- Eliminado: no mostrar contraseñas en la UI -->
           <div class="info-item" *ngIf="contactInfo().address">
             <strong>Dirección:</strong>
             <p>{{ contactInfo().address }}</p>

@@ -36,21 +36,51 @@ export class ReservaService {
     // Para creación, el backend requiere: instalacionId, fechaReserva, horaInicio, horaFin
     // Construimos el body sólo con propiedades definidas para no enviar valores undefined
     const body: any = {};
-    if (payload.instalacion_id != null) body.instalacionId = payload.instalacion_id;
+    if (payload.instalacion_id != null) {
+      body.instalacionId = payload.instalacion_id;
+      body.instalacion_id = payload.instalacion_id; // snake_case compat
+    }
     // Asociar la reserva al usuario (necesario para socios)
-    if (payload.usuario_id != null) body.usuarioId = payload.usuario_id;
-    if (payload.fecha_reserva) body.fechaReserva = payload.fecha_reserva;
-    if (payload.hora_inicio) body.horaInicio = payload.hora_inicio;
-    if (payload.hora_fin) body.horaFin = payload.hora_fin;
+    if (payload.usuario_id != null) {
+      body.usuarioId = payload.usuario_id;
+      body.usuario_id = payload.usuario_id; // snake_case compat
+    }
+    if (payload.fecha_reserva) {
+      body.fechaReserva = payload.fecha_reserva;
+      body.fecha_reserva = payload.fecha_reserva; // snake_case compat
+    }
+    if (payload.hora_inicio) {
+      body.horaInicio = payload.hora_inicio;
+      body.hora_inicio = payload.hora_inicio; // snake_case compat
+    }
+    if (payload.hora_fin) {
+      body.horaFin = payload.hora_fin;
+      body.hora_fin = payload.hora_fin; // snake_case compat
+    }
 
     // Campos opcionales que el backend puede aceptar
-    if (payload.cantidad_personas != null) body.cantidadPersonas = payload.cantidad_personas;
+    if (payload.cantidad_personas != null) {
+      body.cantidadPersonas = payload.cantidad_personas;
+      body.cantidad_personas = payload.cantidad_personas;
+    }
     if (payload.motivo) body.motivo = payload.motivo;
     if (payload.observaciones) body.observaciones = payload.observaciones;
-    if (payload.estado) body.estado = payload.estado;
-    if (payload.precio_total != null) body.precioTotal = payload.precio_total;
-    if (payload.costo_total != null) body.costoTotal = payload.costo_total;
-    if (payload.fecha_cancelacion) body.fechaCancelacion = payload.fecha_cancelacion;
+    if (payload.estado) {
+      body.estado = payload.estado;
+      // algunos backends usan mayúsculas; no forzamos, dejamos como viene
+    }
+    if (payload.precio_total != null) {
+      body.precioTotal = payload.precio_total;
+      body.precio_total = payload.precio_total;
+    }
+    if (payload.costo_total != null) {
+      body.costoTotal = payload.costo_total;
+      body.costo_total = payload.costo_total;
+    }
+    if (payload.fecha_cancelacion) {
+      body.fechaCancelacion = payload.fecha_cancelacion;
+      body.fecha_cancelacion = payload.fecha_cancelacion;
+    }
 
     return body;
   }

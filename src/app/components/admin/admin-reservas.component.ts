@@ -256,7 +256,17 @@ export class AdminReservasComponent {
       });
     } else {
       // Crear nueva reserva
-      this.reservasSrv.create(payload).subscribe({ next: () => { this.reset(); this.load(); this.notify.success('Reserva creada correctamente'); } });
+      this.reservasSrv.create(payload).subscribe({
+        next: () => {
+          this.reset();
+          this.load();
+          this.notify.success('Reserva creada correctamente');
+        },
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || err?.message || 'No se pudo crear la reserva';
+          this.notify.error(msg);
+        }
+      });
     }
   }
 

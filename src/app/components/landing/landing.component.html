@@ -92,9 +92,6 @@
       <h2>Nuestras Instalaciones</h2>
       <div class="grid">
         <div class="card" *ngFor="let instalacion of instalaciones()">
-          <div class="card-image" *ngIf="instalacion.imagen">
-            <img [src]="instalacion.imagen" alt="Imagen instalación" appFallbackImage />
-          </div>
           <div class="card-content">
             <h3>{{ instalacion.nombre }}</h3>
             <p>{{ instalacion.descripcion }}</p>
@@ -102,6 +99,9 @@
               <span>Capacidad: {{ instalacion.capacidad }} personas</span>
               <span *ngIf="instalacion.precioHora !== null && instalacion.precioHora !== undefined" class="precio">${{ instalacion.precioHora }}/hora</span>
             </div>
+          </div>
+          <div class="card-image" *ngIf="instalacion.foto || instalacion.imagen" style="margin-top:0.5rem">
+            <img [src]="instalacion.foto || instalacion.imagen" alt="Imagen instalación" appFallbackImage />
           </div>
         </div>
       </div>

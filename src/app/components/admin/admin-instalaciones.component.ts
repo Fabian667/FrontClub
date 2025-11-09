@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { InstalacionService } from '../../core/services/instalacion.service';
 import { Instalacion } from '../../models/instalacion.model';
 import { NotificationService } from '../../core/services/notification.service';
+import { UploadService } from '../../core/services/upload.service';
 
 @Component({
   selector: 'app-admin-instalaciones',
@@ -54,8 +55,9 @@ import { NotificationService } from '../../core/services/notification.service';
               <input type="checkbox" formControlName="requiereAprobacion" />
             </div>
             <div class="form-group">
-              <label>Foto (URL)</label>
+              <label>Foto (URL o subir archivo)</label>
               <input type="text" formControlName="foto" class="form-control" placeholder="https://...">
+              <input type="file" (change)="onImageSelected($event)" accept="image/*" style="margin-top:0.5rem" />
               <div *ngIf="instalacionForm.get('foto')?.value" style="margin-top:0.5rem">
                 <img [src]="instalacionForm.get('foto')?.value" alt="Preview foto" style="max-height:80px;border:1px solid #ddd;border-radius:4px" />
               </div>
@@ -166,6 +168,7 @@ export class AdminInstalacionesComponent implements OnInit {
   }
 
   private notify = inject(NotificationService);
+  private uploadSrv = inject(UploadService);
 
   ngOnInit() {
     this.loadInstalaciones();
@@ -201,6 +204,29 @@ export class AdminInstalacionesComponent implements OnInit {
         }
       });
     }
+  }
+
+  onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.notify.error('Selecciona un archivo de imagen válido');
+      return;
+    }
+    this.loading = true;
+    this.uploadSrv.uploadImage(file).subscribe({
+      next: (res) => {
+        this.instalacionForm.patchValue({ foto: res.path });
+        this.loading = false;
+        this.notify.info('Imagen subida, se guardará con la instalación');
+      },
+      error: (e) => {
+        console.error('Error subiendo imagen', e);
+        this.loading = false;
+        this.notify.error('Error al subir la imagen');
+      }
+    });
   }
 
   editInstalacion(ins: Instalacion) {

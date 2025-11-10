@@ -36,7 +36,7 @@ import { FallbackImageDirective } from '../shared/fallback-image.directive';
             </div>
             <div class="form-group">
               <label>Fecha</label>
-              <input type="date" class="form-control" [class.error]="isFieldInvalid('fecha')" formControlName="fecha">
+              <input type="datetime-local" class="form-control" [class.error]="isFieldInvalid('fecha')" formControlName="fecha">
               <div class="error-text" *ngIf="form.get('fecha')?.touched && form.get('fecha')?.errors as errors">
                 <small *ngIf="errors['required']">La fecha es obligatoria</small>
               </div>

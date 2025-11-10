@@ -31,12 +31,12 @@ export class NoticiaService {
     if (model.id != null) body.id = model.id;
     if (model.titulo != null) body.titulo = String(model.titulo).trim();
     if (model.descripcion != null) body.contenido = String(model.descripcion).trim();
-    if (model.fecha != null) body.fecha_publicacion = model.fecha;
-    if (model.imagenUrl != null) body.imagen = model.imagenUrl;
+    if (model.fecha != null) body.fechaPublicacion = model.fecha;
+    if (model.imagenUrl != null) body.imagen = String(model.imagenUrl).trim();
     if (model.subtitulo != null) body.subtitulo = String(model.subtitulo).trim();
     if (model.autor != null) body.autor = String(model.autor).trim();
     if (model.destacada != null) body.destacada = !!model.destacada;
-    if (model.estado != null) body.estado = model.estado;
+    if (model.estado != null) body.estado = String(model.estado).toUpperCase();
     if (model.editor != null) body.editor = String(model.editor).trim();
     return body;
   }

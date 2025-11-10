@@ -178,26 +178,43 @@ export class LandingComponent implements OnInit {
   }
 
   private loadContactInfo() {
-    // Primero intento cargar desde la API pública de Información
+    // Intento principal: API backend
     this.informacionSrv.getAll().subscribe({
       next: (items: Informacion[]) => {
         const info = (items && items.length > 0) ? items[0] : undefined;
         if (info) {
           const mapped = this.mapInformacionToContact(info);
           this.contactInfo.set(mapped);
-          // Además, si estamos en browser, persistimos como respaldo
           if (isPlatformBrowser(this.platformId)) {
             try { localStorage.setItem('siteContactInfo', JSON.stringify(mapped)); } catch {}
           }
         } else {
-          // Fallback a localStorage si no hay datos
-          this.loadContactInfoFromLocalStorage();
+          // Fallback: datos públicos en GitHub Pages
+          this.loadContactInfoFromGithub();
         }
       },
       error: () => {
-        // Fallback en caso de error de red/API
-        this.loadContactInfoFromLocalStorage();
+        // Fallback: datos públicos en GitHub Pages
+        this.loadContactInfoFromGithub();
       }
+    });
+  }
+
+  private loadContactInfoFromGithub() {
+    this.informacionSrv.getAllFromGithub().subscribe({
+      next: (items: Informacion[]) => {
+        const info = (items && items.length > 0) ? items[0] : undefined;
+        if (info) {
+          const mapped = this.mapInformacionToContact(info);
+          this.contactInfo.set(mapped);
+          if (isPlatformBrowser(this.platformId)) {
+            try { localStorage.setItem('siteContactInfo', JSON.stringify(mapped)); } catch {}
+          }
+        } else {
+          this.loadContactInfoFromLocalStorage();
+        }
+      },
+      error: () => this.loadContactInfoFromLocalStorage()
     });
   }
 

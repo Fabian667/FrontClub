@@ -128,17 +128,17 @@ import { NotificationService } from '../../core/services/notification.service';
                 <!-- Facebook -->
                 <a *ngIf="info.facebook" [href]="info.facebook" target="_blank" rel="noopener" title="Facebook"
                    style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;margin-right:6px;">
-                  <img src="/icons/facebook.svg" alt="Facebook" width="24" height="24" />
+                  <img src="icons/facebook.svg" alt="Facebook" width="24" height="24" />
                 </a>
                 <!-- Instagram -->
                 <a *ngIf="info.instagram" [href]="info.instagram" target="_blank" rel="noopener" title="Instagram"
                    style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;margin-right:6px;">
-                  <img src="/icons/instagram.svg" alt="Instagram" width="24" height="24" />
+                  <img src="icons/instagram.svg" alt="Instagram" width="24" height="24" />
                 </a>
                 <!-- WhatsApp -->
                 <a *ngIf="info.whatsapp" [href]="getWhatsappUrl(info.whatsapp)" target="_blank" rel="noopener noreferrer" title="WhatsApp"
                    style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;margin-right:6px;">
-                  <img src="/icons/whatsapp.svg" alt="WhatsApp" width="24" height="24" />
+                  <img src="icons/whatsapp.svg" alt="WhatsApp" width="24" height="24" />
                 </a>
               </td>
               <td>

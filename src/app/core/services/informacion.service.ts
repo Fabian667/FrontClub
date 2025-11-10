@@ -9,6 +9,7 @@ import { Informacion } from '../../models/informacion.model';
 export class InformacionService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiUrl + '/informacion';
+  private githubUrl = 'https://fabian667.github.io/FrontClub/admin/informacion';
 
   private fromApi(api: any): Informacion {
     return {
@@ -88,6 +89,14 @@ export class InformacionService {
 
   getAll(): Observable<Informacion[]> {
     return this.http.get<any[]>(this.baseUrl).pipe(
+      map((list) => (Array.isArray(list) ? list.map((i) => this.fromApi(i)) : [])),
+      catchError(() => of([] as Informacion[]))
+    );
+  }
+
+  // Fallback para cargar datos públicos desde GitHub Pages
+  getAllFromGithub(): Observable<Informacion[]> {
+    return this.http.get<any[]>(this.githubUrl).pipe(
       map((list) => (Array.isArray(list) ? list.map((i) => this.fromApi(i)) : [])),
       catchError(() => of([] as Informacion[]))
     );

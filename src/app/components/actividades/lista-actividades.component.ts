@@ -30,7 +30,7 @@ export class ListaActividadesComponent {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const file = input.files[0];
-    this.uploadSrv.uploadImage(file).subscribe({
+    this.uploadSrv.uploadImageTo(file, 'imagenes').subscribe({
       next: (res) => this.imagenSubida.set(res.path),
       error: (e) => console.error('Error subiendo imagen', e)
     });

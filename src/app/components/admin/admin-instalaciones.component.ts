@@ -215,7 +215,7 @@ export class AdminInstalacionesComponent implements OnInit {
       return;
     }
     this.loading = true;
-    this.uploadSrv.uploadImage(file).subscribe({
+    this.uploadSrv.uploadImageTo(file, 'imagenes').subscribe({
       next: (res) => {
         this.instalacionForm.patchValue({ foto: res.path });
         this.loading = false;

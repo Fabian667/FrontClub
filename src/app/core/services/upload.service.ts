@@ -10,8 +10,13 @@ export class UploadService {
   private base = environment.apiUrl + '/upload';
 
   uploadImage(file: File): Observable<{ path: string }> {
+    return this.uploadImageTo(file, 'uploads');
+  }
+
+  uploadImageTo(file: File, folder: 'imagenes' | 'uploads' = 'uploads'): Observable<{ path: string }> {
     const form = new FormData();
     form.append('file', file);
-    return this.http.post<{ path: string }>(this.base, form);
+    const url = `${this.base}?folder=${folder}`;
+    return this.http.post<{ path: string }>(url, form);
   }
 }

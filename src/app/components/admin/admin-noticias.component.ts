@@ -470,7 +470,7 @@ export class AdminNoticiasComponent implements OnInit {
     reader.readAsDataURL(file);
 
     this.uploadingImage.set(true);
-    this.uploadSrv.uploadImage(file)
+    this.uploadSrv.uploadImageTo(file, 'imagenes')
       .pipe(finalize(() => this.uploadingImage.set(false)))
       .subscribe({
         next: (response) => {

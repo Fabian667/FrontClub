@@ -11,6 +11,7 @@ import { setInterval as scheduleInterval } from 'node:timers';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 const uploadsFolder = join(import.meta.dirname, '../public/uploads');
+const imagenesFolder = join(import.meta.dirname, '../public/imagenes');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
@@ -42,10 +43,17 @@ scheduleKeepAlive();
 
 // Servir imágenes subidas desde /public/uploads
 app.use('/uploads', express.static(uploadsFolder, { maxAge: '1y' }));
+// Servir imágenes del proyecto desde /public/imagenes
+app.use('/imagenes', express.static(imagenesFolder, { maxAge: '1y' }));
 
 // Endpoint de subida de imágenes
 const storage = multer.diskStorage({
-  destination: uploadsFolder,
+  destination: (req: any, file: any, cb: any) => {
+    // Permite elegir carpeta de destino: ?folder=imagenes | uploads (por defecto)
+    const folderParam = (req?.query?.folder || '').toString();
+    const dest = folderParam === 'imagenes' ? imagenesFolder : uploadsFolder;
+    cb(null, dest);
+  },
   filename: (req: any, file: any, cb: any) => {
     const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
     const ext = (file?.originalname || '').split('.').pop();
@@ -55,7 +63,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 app.post('/api/upload', upload.single('file'), (req: any, res) => {
   const filename = req?.file?.filename;
-  res.json({ path: `/uploads/${filename}` });
+  const folderParam = (req?.query?.folder || '').toString();
+  const folderName = folderParam === 'imagenes' ? 'imagenes' : 'uploads';
+  res.json({ path: `/${folderName}/${filename}` });
 });
 
 /**

@@ -44,7 +44,7 @@
   </section>
 
   <!-- Noticias Section -->
-  <section class="section" id="noticias">
+  <section class="section" id="noticias" *ngIf="noticias().length > 0">
     <div class="container">
       <h2>Noticias</h2>
       <div class="grid">
@@ -61,7 +61,6 @@
           </div>
         </div>
       </div>
-      <p *ngIf="noticias().length === 0" class="empty-msg">No hay noticias disponibles por el momento.</p>
     </div>
   </section>
 

@@ -53,6 +53,37 @@ import { FallbackImageDirective } from '../shared/fallback-image.directive';
             </div>
           </div>
 
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subtítulo</label>
+              <input type="text" class="form-control" formControlName="subtitulo">
+            </div>
+            <div class="form-group">
+              <label>Autor</label>
+              <input type="text" class="form-control" formControlName="autor">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Estado</label>
+              <select class="form-control" formControlName="estado">
+                <option value="borrador">Borrador</option>
+                <option value="publicada">Publicada</option>
+                <option value="archivada">Archivada</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="destacada" formControlName="destacada">
+              <label for="destacada" style="margin:0;">Destacada</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Editor</label>
+            <input type="text" class="form-control" formControlName="editor">
+          </div>
+
           <div class="form-group">
             <label>Imagen</label>
             <div class="image-upload">
@@ -503,7 +534,12 @@ export class AdminNoticiasComponent implements OnInit {
     titulo: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
     descripcion: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(2000)]],
     fecha: ['', Validators.required],
-    imagenUrl: ['']
+    imagenUrl: [''],
+    subtitulo: ['', [Validators.maxLength(255)]],
+    autor: ['', [Validators.maxLength(255)]],
+    destacada: [false],
+    estado: ['borrador'],
+    editor: ['', [Validators.maxLength(255)]]
   });
 
   constructor(private noticiaService: NoticiaService) {}
@@ -530,7 +566,26 @@ export class AdminNoticiasComponent implements OnInit {
       return;
     }
     this.loading = true;
-    const data = this.form.value as Partial<Noticia>;
+    const raw = this.form.value as Partial<Noticia>;
+    const data: Partial<Noticia> = {
+      titulo: (raw.titulo ?? '').toString().trim(),
+      descripcion: (raw.descripcion ?? '').toString().trim(),
+      fecha: raw.fecha ?? '',
+      imagenUrl: raw.imagenUrl ?? '',
+      subtitulo: (raw.subtitulo ?? '').toString().trim(),
+      autor: (raw.autor ?? '').toString().trim(),
+      destacada: !!raw.destacada,
+      estado: raw.estado ?? undefined,
+      editor: (raw.editor ?? '').toString().trim()
+    };
+    // Si tras trim queda vacío, eliminar para evitar validaciones del backend
+    if (!data.titulo) delete data.titulo;
+    if (!data.descripcion) delete data.descripcion;
+    if (!data.fecha) delete data.fecha;
+    if (!data.imagenUrl) delete data.imagenUrl;
+    if (!data.subtitulo) delete data.subtitulo;
+    if (!data.autor) delete data.autor;
+    if (!data.editor) delete data.editor;
     const op = this.editingId ? this.noticiaService.update(this.editingId, data) : this.noticiaService.create(data);
     op.subscribe({
       next: () => {

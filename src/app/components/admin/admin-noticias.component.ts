@@ -128,7 +128,11 @@ import { FallbackImageDirective } from '../shared/fallback-image.directive';
           <thead>
             <tr>
               <th>Título</th>
+              <th>Subtítulo</th>
+              <th>Autor</th>
               <th>Fecha</th>
+              <th>Estado</th>
+              <th>Destacada</th>
               <th>Descripción</th>
               <th>Acciones</th>
             </tr>
@@ -141,7 +145,11 @@ import { FallbackImageDirective } from '../shared/fallback-image.directive';
                   {{ n.titulo }}
                 </div>
               </td>
+              <td>{{ n.subtitulo || '-' }}</td>
+              <td>{{ n.autor || '-' }}</td>
               <td>{{ n.fecha || '-' }}</td>
+              <td>{{ n.estado || '-' }}</td>
+              <td>{{ n.destacada ? 'Sí' : 'No' }}</td>
               <td>{{ n.descripcion || '-' }}</td>
               <td>
                 <button class="btn btn-sm btn-warning" (click)="edit(n)">Editar</button>

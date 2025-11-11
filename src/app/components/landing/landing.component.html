@@ -22,7 +22,6 @@
         <a href="#actividades" (click)="closeMenu()">Actividades</a>
         <a href="#instalaciones" (click)="closeMenu()">Instalaciones</a>
         <a href="#eventos" (click)="closeMenu()">Eventos</a>
-        <a routerLink="/reservas" (click)="closeMenu()">Reservas</a>
         <a href="#contacto" (click)="closeMenu()">Contacto</a>
         <a *ngIf="!isLoggedIn()" routerLink="/admin/login" class="login-btn" (click)="closeMenu()">Login</a>
         <button *ngIf="isLoggedIn()" (click)="logout(); closeMenu()" class="login-btn">Salir</button>
@@ -40,10 +39,99 @@
       <!-- Botón de administrar eliminado -->
       <div class="details" *ngIf="reservasCount() >= 0">
         <span>Reservas registradas: {{ reservasCount() }}</span>
-        <span *ngIf="reservas().length > 0"> | <a routerLink="/reservas">Ver reservas</a></span>
+          <span *ngIf="reservas().length > 0"> |
+            <button class="cta-btn alt small" type="button" (click)="openReservasModal()">Ver reservas</button>
+          </span>
       </div>
     </div>
   </section>
+
+  <!-- Modal de Reservas -->
+  <div class="modal-backdrop" *ngIf="reservasModalOpen()" (click)="closeReservasModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reservasModalTitle" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="reservasModalTitle">Reservas de {{ clubName() || 'nuestro club' }}</h2>
+        <button class="modal-close" (click)="closeReservasModal()" aria-label="Cerrar">×</button>
+      </div>
+      <div class="modal-body">
+        <!-- Pregunta si es socio -->
+        <div class="socio-question" *ngIf="!mostrarSolicitud()">
+          <p><strong>¿Eres socio?</strong></p>
+          <div class="actions">
+            <button class="cta-btn" routerLink="/admin/login" (click)="closeReservasModal()" type="button">Sí, soy socio</button>
+            <button class="cta-btn alt" (click)="openSolicitudForm()">No, solicitar reserva</button>
+            <button class="cta-btn ghost" type="button" (click)="closeReservasModal()">Cancelar</button>
+          </div>
+        </div>
+
+        <!-- Formulario de solicitud para no socios -->
+        <form *ngIf="mostrarSolicitud()" #solForm="ngForm" (ngSubmit)="sendSolicitudWhatsApp(solForm)" class="solicitud-form">
+          <h3>Solicitud de reserva (no socios)</h3>
+          <div class="form-row">
+            <label for="solNombre">Nombre</label>
+            <input id="solNombre" name="nombre" [(ngModel)]="solicitud.nombre" required />
+          </div>
+          <div class="form-row">
+            <label for="solTelefono">Teléfono</label>
+            <input id="solTelefono" name="telefono" [(ngModel)]="solicitud.telefono" required />
+          </div>
+          <div class="form-row">
+            <label for="solEmail">Email</label>
+            <input id="solEmail" name="email" type="email" [(ngModel)]="solicitud.email" />
+          </div>
+          <div class="form-row">
+            <label for="solInstalacion">Instalación</label>
+            <select id="solInstalacion" name="instalacion" [(ngModel)]="solicitud.instalacionId">
+              <option [ngValue]="null">Seleccionar...</option>
+              <option *ngFor="let i of instalaciones()" [ngValue]="i.id">{{ i.nombre }}</option>
+            </select>
+          </div>
+          <div class="form-row grid-2">
+            <div>
+              <label for="solFecha">Fecha</label>
+              <input id="solFecha" name="fecha" type="date" [(ngModel)]="solicitud.fecha" />
+            </div>
+            <div>
+              <label for="solInicio">Hora inicio</label>
+              <input id="solInicio" name="horaInicio" type="time" [(ngModel)]="solicitud.horaInicio" />
+            </div>
+            <div>
+              <label for="solFin">Hora fin</label>
+              <input id="solFin" name="horaFin" type="time" [(ngModel)]="solicitud.horaFin" />
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="solMotivo">Motivo</label>
+            <textarea id="solMotivo" name="motivo" rows="3" [(ngModel)]="solicitud.motivo"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="cta-btn" type="submit">Enviar por WhatsApp</button>
+          </div>
+        </form>
+
+        <div class="grid" *ngIf="!mostrarSolicitud()">
+          <div class="card" *ngFor="let r of reservas()">
+            <div class="card-content">
+              <h3>{{ getInstalacionNombre(r.instalacion_id) }}</h3>
+              <div class="details">
+                <span>Fecha: {{ r.fecha_reserva }}</span>
+                <span *ngIf="r.hora_inicio">Inicio: {{ r.hora_inicio }}</span>
+                <span *ngIf="r.hora_fin">Fin: {{ r.hora_fin }}</span>
+                <span *ngIf="r.cantidad_personas">Personas: {{ r.cantidad_personas }}</span>
+                <span *ngIf="r.estado">Estado: {{ r.estado }}</span>
+              </div>
+              <p *ngIf="r.motivo">Motivo: {{ r.motivo }}</p>
+              <p *ngIf="r.observaciones">Observaciones: {{ r.observaciones }}</p>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!mostrarSolicitud() && reservas().length === 0" class="empty-msg">No hay reservas para mostrar.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="cta-btn ghost large" type="button" (click)="closeReservasModal()">Salir</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Noticias Section -->
   <section class="section" id="noticias" *ngIf="noticias().length > 0">
@@ -135,29 +223,6 @@
     </div>
   </section>
 
-  <!-- Reservas Section -->
-  <section class="section alt" id="reservas" *ngIf="reservas().length > 0">
-    <div class="container">
-      <h2>Reservas de {{ clubName() || 'nuestro club' }}</h2>
-      <div class="grid">
-        <div class="card" *ngFor="let r of reservas()">
-          <div class="card-content">
-            <h3>{{ getInstalacionNombre(r.instalacion_id) }}</h3>
-            <div class="details">
-              <span>Fecha: {{ r.fecha_reserva }}</span>
-              <span *ngIf="r.hora_inicio">Inicio: {{ r.hora_inicio }}</span>
-              <span *ngIf="r.hora_fin">Fin: {{ r.hora_fin }}</span>
-              <span *ngIf="r.cantidad_personas">Personas: {{ r.cantidad_personas }}</span>
-              <span *ngIf="r.estado">Estado: {{ r.estado }}</span>
-            </div>
-            <p *ngIf="r.motivo">Motivo: {{ r.motivo }}</p>
-            <p *ngIf="r.observaciones">Observaciones: {{ r.observaciones }}</p>
-          </div>
-        </div>
-      </div>
-      <p *ngIf="reservas().length === 0" class="empty-msg">No hay reservas para mostrar.</p>
-    </div>
-  </section>
 
   <!-- Contact Section -->
   <section id="contacto" class="contact-section">

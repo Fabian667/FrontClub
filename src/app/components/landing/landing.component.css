@@ -584,3 +584,153 @@
   margin-bottom: 1rem;
   color: var(--color-primary);
 }
+/* Modal de Reservas */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  width: min(900px, 92vw);
+  max-height: 85vh;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 16px 20px;
+  overflow: auto;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 12px 20px 18px;
+  border-top: 1px solid #eee;
+}
+
+.cta-btn {
+  background: #2ecc71;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cta-btn:hover {
+  background: #27ae60;
+}
+
+.cta-btn.primary {
+  background: #e67e22;
+}
+.cta-btn.primary:hover {
+  background: #d66d12;
+}
+.cta-btn.large {
+  padding: 12px 18px;
+  font-size: 1rem;
+}
+.
+.cta-btn.small {
+  padding: 6px 10px;
+  font-size: 0.9rem;
+}
+/* Ajuste para botón inline en la fila de detalles */
+.details .cta-btn.small {
+  margin-left: 8px;
+}
+@media (max-width: 600px) {
+  .modal-footer .cta-btn.large {
+    width: 100%;
+  }
+}
+
+/* Variantes y estilos del formulario de solicitud */
+.cta-btn.alt {
+  background: #3498db;
+}
+.cta-btn.alt:hover {
+  background: #2c82c9;
+}
+
+.cta-btn.ghost {
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+.cta-btn.ghost:hover {
+  background: #e0e6e8;
+}
+
+.socio-question {
+  margin-bottom: 16px;
+}
+.socio-question .actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.solicitud-form {
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 12px 12px 4px;
+  margin-bottom: 16px;
+}
+.solicitud-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.solicitud-form .form-row.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+.solicitud-form input,
+.solicitud-form select,
+.solicitud-form textarea {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+}
+.solicitud-form .form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}

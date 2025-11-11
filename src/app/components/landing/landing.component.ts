@@ -53,6 +53,29 @@ export class LandingComponent implements OnInit {
   reservasCount = signal<number>(0);
   reservas = signal<any[]>([]);
   clubName = signal<string>('');
+  // Estado del modal de reservas
+  reservasModalOpen = signal<boolean>(false);
+  // Flujo: solicitud por WhatsApp para no socios
+  mostrarSolicitud = signal<boolean>(false);
+  solicitud: {
+    nombre: string;
+    telefono: string;
+    email: string;
+    instalacionId: number | null;
+    fecha: string;
+    horaInicio: string;
+    horaFin: string;
+    motivo: string;
+  } = {
+    nombre: '',
+    telefono: '',
+    email: '',
+    instalacionId: null,
+    fecha: '',
+    horaInicio: '',
+    horaFin: '',
+    motivo: ''
+  };
 
   backgroundStyle = signal<string>('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
   private landingSliders = signal<string[]>([]);
@@ -290,6 +313,58 @@ export class LandingComponent implements OnInit {
       localStorage.removeItem('token');
     }
     this.isLoggedIn.set(false);
+  }
+
+  openSolicitudForm() {
+    this.mostrarSolicitud.set(true);
+  }
+
+  cancelSolicitudForm() {
+    this.mostrarSolicitud.set(false);
+  }
+
+  sendSolicitudWhatsApp(form?: NgForm) {
+    const info = this.contactInfo();
+    const phoneRaw = info.whatsapp || info.phone || '';
+    const digits = String(phoneRaw).replace(/[^0-9]/g, '');
+    if (!digits) {
+      // Si no hay número válido, simplemente no hacemos nada para evitar errores
+      return;
+    }
+    const nombre = (this.solicitud.nombre || '').trim();
+    const telefono = (this.solicitud.telefono || '').trim();
+    const email = (this.solicitud.email || '').trim();
+    const instalacion = this.getInstalacionNombre(this.solicitud.instalacionId ?? undefined);
+    const fecha = (this.solicitud.fecha || '').trim();
+    const horaInicio = (this.solicitud.horaInicio || '').trim();
+    const horaFin = (this.solicitud.horaFin || '').trim();
+    const motivo = (this.solicitud.motivo || '').trim();
+
+    const lines = [
+      '*Solicitud de reserva*',
+      nombre ? `Nombre: ${nombre}` : undefined,
+      telefono ? `Teléfono: ${telefono}` : undefined,
+      email ? `Email: ${email}` : undefined,
+      instalacion ? `Instalación: ${instalacion}` : undefined,
+      fecha ? `Fecha: ${fecha}` : undefined,
+      horaInicio ? `Inicio: ${horaInicio}` : undefined,
+      horaFin ? `Fin: ${horaFin}` : undefined,
+      motivo ? `Motivo: ${motivo}` : undefined
+    ].filter(Boolean) as string[];
+    const text = encodeURIComponent(lines.join('\n'));
+    const url = `https://wa.me/${digits}?text=${text}`;
+    if (isPlatformBrowser(this.platformId)) {
+      window.open(url, '_blank');
+    }
+  }
+
+  // Modal reservas
+  openReservasModal() {
+    this.reservasModalOpen.set(true);
+  }
+
+  closeReservasModal() {
+    this.reservasModalOpen.set(false);
   }
 
 

@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Build Angular for Pages
-        run: npm run build -- --configuration production --base-href /FrontClub/ --deploy-url /FrontClub/
+        run: npm run build -- --configuration production --base-href /${{ github.event.repository.name }}/ --deploy-url /${{ github.event.repository.name }}/
 
       - name: Add SPA fallback 404.html
         run: cp dist/clubSocialRest/browser/index.html dist/clubSocialRest/browser/404.html

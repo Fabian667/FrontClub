@@ -12,9 +12,11 @@ import { AdminUsuariosComponent } from './components/admin/admin-usuarios.compon
 import { AdminReservasComponent } from './components/admin/admin-reservas.component';
 import { AdminContactoComponent } from './components/admin/admin-contacto.component';
 import { AdminInformacionComponent } from './components/admin/admin-informacion.component';
+import { ReservasPublicComponent } from './components/reservas/reservas-public.component';
 
 export const routes: Routes = [
   { path: '', component: LandingComponent },
+  { path: 'reservas', component: ReservasPublicComponent },
   { path: 'admin/login', component: LoginComponent },
   { 
     path: 'admin', 

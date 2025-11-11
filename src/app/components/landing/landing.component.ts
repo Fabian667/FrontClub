@@ -51,6 +51,8 @@ export class LandingComponent implements OnInit {
   instalaciones = signal<any[]>([]);
   eventos = signal<any[]>([]);
   reservasCount = signal<number>(0);
+  reservas = signal<any[]>([]);
+  clubName = signal<string>('');
 
   backgroundStyle = signal<string>('linear-gradient(135deg, #667eea 0%, #764ba2 100%)');
   private landingSliders = signal<string[]>([]);
@@ -175,6 +177,11 @@ export class LandingComponent implements OnInit {
     this.instalacionesSrv.getAll().subscribe({ next: (data) => this.instalaciones.set(data || []), error: () => this.instalaciones.set([]) });
     this.eventosSrv.getAll().subscribe({ next: (data) => this.eventos.set(data || []), error: () => this.eventos.set([]) });
     this.reservasSrv.getCount().subscribe({ next: (count) => this.reservasCount.set(count ?? 0), error: () => this.reservasCount.set(0) });
+    this.reservasSrv.getAll().subscribe({ next: (items) => {
+      const list = Array.isArray(items) ? items : [];
+      // Mostrar máximo 10 para no saturar la landing
+      this.reservas.set(list.slice(0, 10));
+    }, error: () => this.reservas.set([]) });
   }
 
   private loadContactInfo() {
@@ -185,6 +192,7 @@ export class LandingComponent implements OnInit {
         if (info) {
           const mapped = this.mapInformacionToContact(info);
           this.contactInfo.set(mapped);
+          this.clubName.set(info.nombreClub || '');
           if (isPlatformBrowser(this.platformId)) {
             try { localStorage.setItem('siteContactInfo', JSON.stringify(mapped)); } catch {}
           }
@@ -207,6 +215,7 @@ export class LandingComponent implements OnInit {
         if (info) {
           const mapped = this.mapInformacionToContact(info);
           this.contactInfo.set(mapped);
+          this.clubName.set(info.nombreClub || '');
           if (isPlatformBrowser(this.platformId)) {
             try { localStorage.setItem('siteContactInfo', JSON.stringify(mapped)); } catch {}
           }
@@ -224,12 +233,22 @@ export class LandingComponent implements OnInit {
         const raw = localStorage.getItem('siteContactInfo');
         const parsed: ContactInfo = raw ? JSON.parse(raw) : {};
         this.contactInfo.set(parsed || {});
+        // Si no tenemos nombre, dejar vacío
+        this.clubName.set('');
       } catch {
         this.contactInfo.set({});
+        this.clubName.set('');
       }
     } else {
       this.contactInfo.set({});
+      this.clubName.set('');
     }
+  }
+
+  getInstalacionNombre(id?: number | null): string {
+    if (!id) return '-';
+    const found = (this.instalaciones() || []).find((i: any) => i.id === id);
+    return found?.nombre || `Instalación #${id}`;
   }
 
 

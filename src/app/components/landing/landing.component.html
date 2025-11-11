@@ -18,10 +18,11 @@
         <span class="bar"></span>
       </button>
       <nav id="primary-nav" class="nav-links" [class.open]="menuOpen()">
-        <a href="#noticias" (click)="closeMenu()">Noticias</a>
+        <a href="#noticias" *ngIf="noticias().length > 0" (click)="closeMenu()">Noticias</a>
         <a href="#actividades" (click)="closeMenu()">Actividades</a>
         <a href="#instalaciones" (click)="closeMenu()">Instalaciones</a>
         <a href="#eventos" (click)="closeMenu()">Eventos</a>
+        <a routerLink="/reservas" (click)="closeMenu()">Reservas</a>
         <a href="#contacto" (click)="closeMenu()">Contacto</a>
         <a *ngIf="!isLoggedIn()" routerLink="/admin/login" class="login-btn" (click)="closeMenu()">Login</a>
         <button *ngIf="isLoggedIn()" (click)="logout(); closeMenu()" class="login-btn">Salir</button>
@@ -39,6 +40,7 @@
       <!-- Botón de administrar eliminado -->
       <div class="details" *ngIf="reservasCount() >= 0">
         <span>Reservas registradas: {{ reservasCount() }}</span>
+        <span *ngIf="reservas().length > 0"> | <a routerLink="/reservas">Ver reservas</a></span>
       </div>
     </div>
   </section>
@@ -130,6 +132,30 @@
         </div>
       </div>
       <p *ngIf="eventos().length === 0" class="empty-msg">No hay eventos programados o no se pudieron cargar.</p>
+    </div>
+  </section>
+
+  <!-- Reservas Section -->
+  <section class="section alt" id="reservas" *ngIf="reservas().length > 0">
+    <div class="container">
+      <h2>Reservas de {{ clubName() || 'nuestro club' }}</h2>
+      <div class="grid">
+        <div class="card" *ngFor="let r of reservas()">
+          <div class="card-content">
+            <h3>{{ getInstalacionNombre(r.instalacion_id) }}</h3>
+            <div class="details">
+              <span>Fecha: {{ r.fecha_reserva }}</span>
+              <span *ngIf="r.hora_inicio">Inicio: {{ r.hora_inicio }}</span>
+              <span *ngIf="r.hora_fin">Fin: {{ r.hora_fin }}</span>
+              <span *ngIf="r.cantidad_personas">Personas: {{ r.cantidad_personas }}</span>
+              <span *ngIf="r.estado">Estado: {{ r.estado }}</span>
+            </div>
+            <p *ngIf="r.motivo">Motivo: {{ r.motivo }}</p>
+            <p *ngIf="r.observaciones">Observaciones: {{ r.observaciones }}</p>
+          </div>
+        </div>
+      </div>
+      <p *ngIf="reservas().length === 0" class="empty-msg">No hay reservas para mostrar.</p>
     </div>
   </section>
 

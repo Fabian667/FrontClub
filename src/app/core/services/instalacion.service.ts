@@ -22,7 +22,7 @@ export class InstalacionService {
       requiereAprobacion: api.requiereAprobacion ?? api.requiere_aprobacion ?? false,
       foto: api.foto ?? null,
       // Enlace/URL opcional
-      url: api.url ?? api.enlace ?? null,
+      url: (api.url ?? api.enlace ?? api.website ?? api.sitioWeb ?? api.sitio_web ?? api.link ?? null),
       // Compatibilidad con UI previa
       capacidad: api.capacidad ?? api.capacidadMaxima ?? api.capacidad_maxima ?? null,
       imagen: (api.foto ?? api.imagen ?? api.imagenUrl ?? api.imagen_url ?? null),
@@ -50,11 +50,24 @@ export class InstalacionService {
       body.requiereAprobacion = model.requiereAprobacion;
       body.requiere_aprobacion = model.requiereAprobacion;
     }
-    if (model.foto != null) body.foto = model.foto;
+    if (model.foto != null) {
+      // Enviar la imagen con distintos alias para máxima compatibilidad
+      body.foto = model.foto;
+      body.imagen = model.foto;
+      body.imagenUrl = model.foto;
+      body.imagen_url = model.foto;
+    }
     if (model.url != null) {
-      // Mapear a posibles nombres de campo del backend
-      body.url = model.url;
-      body.enlace = model.url;
+      const u = String(model.url).trim();
+      if (u) {
+        // Mapear a posibles nombres de campo del backend
+        body.url = u;
+        body.enlace = u;
+        body.website = u;
+        body.sitioWeb = u;
+        body.sitio_web = u;
+        body.link = u;
+      }
     }
     return body;
   }

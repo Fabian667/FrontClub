@@ -197,8 +197,19 @@ export class AdminInstalacionesComponent implements OnInit {
         : this.instalacionesService.create(data);
 
       op.subscribe({
-        next: () => {
+        next: (saved: Instalacion) => {
           this.loading = false;
+          // Persistencia de respaldo en el navegador por si el backend ignora el campo URL
+          try {
+            const raw = localStorage.getItem('instalacionUrlOverrides') || '{}';
+            const overrides = JSON.parse(raw);
+            const finalId = saved?.id ?? this.editingId ?? null;
+            const urlStr = String(data?.url || '').trim();
+            if (finalId && urlStr) {
+              overrides[String(finalId)] = urlStr;
+              localStorage.setItem('instalacionUrlOverrides', JSON.stringify(overrides));
+            }
+          } catch {}
           this.loadInstalaciones();
           this.resetForm();
           this.showForm = false;

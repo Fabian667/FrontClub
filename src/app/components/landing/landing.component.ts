@@ -199,7 +199,25 @@ export class LandingComponent implements OnInit {
   private loadPublic() {
     this.noticiasSrv.getAll().subscribe({ next: (data) => this.noticias.set(data || []), error: () => this.noticias.set([]) });
     this.actividadesSrv.getAll().subscribe({ next: (data) => this.actividades.set(data || []), error: () => this.actividades.set([]) });
-    this.instalacionesSrv.getAll().subscribe({ next: (data) => this.instalaciones.set(data || []), error: () => this.instalaciones.set([]) });
+    this.instalacionesSrv.getAll().subscribe({ next: (data) => {
+      const list = Array.isArray(data) ? data : [];
+      // Overlay de enlaces desde localStorage si el backend no los provee
+      try {
+        const raw = isPlatformBrowser(this.platformId) ? (localStorage.getItem('instalacionUrlOverrides') || '{}') : '{}';
+        const overrides = JSON.parse(raw);
+        const merged = list.map((it: any) => {
+          const id = it?.id;
+          const overrideUrl = id != null ? String(overrides?.[String(id)] || '').trim() : '';
+          if (!it.url && overrideUrl) {
+            return { ...it, url: overrideUrl };
+          }
+          return it;
+        });
+        this.instalaciones.set(merged);
+      } catch {
+        this.instalaciones.set(list);
+      }
+    }, error: () => this.instalaciones.set([]) });
     this.eventosSrv.getAll().subscribe({ next: (data) => this.eventos.set(data || []), error: () => this.eventos.set([]) });
     this.reservasSrv.getCount().subscribe({ next: (count) => this.reservasCount.set(count ?? 0), error: () => this.reservasCount.set(0) });
     this.reservasSrv.getAll().subscribe({ next: (items) => {

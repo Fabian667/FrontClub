@@ -84,6 +84,8 @@ export class LandingComponent implements OnInit {
   // Estado del menú hamburguesa
   menuOpen = signal<boolean>(false);
 
+  
+
   // Imágenes por defecto para el slider de Landing cuando no hay datos del backend
   private readonly DEFAULT_LANDING_SLIDER_IMAGES: string[] = [
     'https://freeimage.host/i/KtE0UCb',

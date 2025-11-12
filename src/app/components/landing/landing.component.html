@@ -37,11 +37,8 @@
       </h1>
       <p>Descubre nuestras actividades, instalaciones, eventos y noticias</p>
       <!-- Botón de administrar eliminado -->
-      <div class="details" *ngIf="reservasCount() >= 0">
-        <span>Reservas registradas: {{ reservasCount() }}</span>
-          <span *ngIf="reservas().length > 0"> |
-            <button class="cta-btn alt small" type="button" (click)="openReservasModal()">Ver reservas</button>
-          </span>
+      <div>
+        <button class="cta-btn alt small" type="button" (click)="openReservasModal()">Reservas</button>
       </div>
     </div>
   </section>
@@ -181,6 +178,11 @@
       <h2>Nuestras Instalaciones</h2>
       <div class="grid">
         <div class="card" *ngFor="let instalacion of instalaciones()">
+          <!-- Imagen arriba: mostrar solo si existe en el admin -->
+          <div class="card-image" *ngIf="instalacion.foto || instalacion.imagen">
+            <img [src]="instalacion.foto || instalacion.imagen" alt="Imagen instalación" />
+          </div>
+
           <div class="card-content">
             <h3>{{ instalacion.nombre }}</h3>
             <p>{{ instalacion.descripcion }}</p>
@@ -188,9 +190,10 @@
               <span>Capacidad: {{ instalacion.capacidad }} personas</span>
               <span *ngIf="instalacion.precioHora !== null && instalacion.precioHora !== undefined" class="precio">${{ instalacion.precioHora }}/hora</span>
             </div>
-          </div>
-          <div class="card-image" *ngIf="instalacion.foto || instalacion.imagen" style="margin-top:0.5rem">
-            <img [src]="instalacion.foto || instalacion.imagen" alt="Imagen instalación" appFallbackImage />
+            <a *ngIf="instalacion.url" [href]="instalacion.url" target="_blank" rel="noopener noreferrer" class="instalacion-link" title="Abrir sitio relacionado">
+              <span class="link-text">Visitar sitio</span>
+              <span aria-hidden="true" class="link-arrow">→</span>
+            </a>
           </div>
         </div>
       </div>

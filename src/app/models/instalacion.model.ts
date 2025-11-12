@@ -12,6 +12,8 @@ export interface Instalacion {
   tipo?: string;
   capacidadMaxima?: number;
   precioHora?: number;
+  // Enlace/URL opcional asociado a la instalación
+  url?: string;
   // Nuevos campos según tabla: requiere_aprobacion, foto
   requiereAprobacion?: boolean;
   foto?: string;

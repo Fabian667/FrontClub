@@ -144,6 +144,76 @@
   word-break: break-word; /* evita desbordes en palabras largas o URLs */
 }
 
+/* Imagen principal de tarjeta */
+.card-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f5f7fb;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  margin-bottom: 1rem;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 260ms ease;
+}
+
+.card:hover .card-image img {
+  transform: scale(1.02);
+}
+
+/* Placeholder si no hay imagen */
+
+
+/* Enlace bajo instalación con efecto */
+.instalacion-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 2px;
+  transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.instalacion-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 250ms ease;
+}
+
+.instalacion-link:hover {
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+
+.instalacion-link:hover::after {
+  transform: scaleX(1);
+}
+
+.instalacion-link .link-arrow {
+  display: inline-block;
+  transition: transform 200ms ease;
+}
+
+.instalacion-link:hover .link-arrow {
+  transform: translateX(3px);
+}
+
 .details {
   display: flex;
   flex-direction: column;

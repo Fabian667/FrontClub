@@ -21,6 +21,8 @@ export class InstalacionService {
       estado: api.estado,
       requiereAprobacion: api.requiereAprobacion ?? api.requiere_aprobacion ?? false,
       foto: api.foto ?? null,
+      // Enlace/URL opcional
+      url: api.url ?? api.enlace ?? null,
       // Compatibilidad con UI previa
       capacidad: api.capacidad ?? api.capacidadMaxima ?? api.capacidad_maxima ?? null,
       imagen: (api.foto ?? api.imagen ?? api.imagenUrl ?? api.imagen_url ?? null),
@@ -49,6 +51,11 @@ export class InstalacionService {
       body.requiere_aprobacion = model.requiereAprobacion;
     }
     if (model.foto != null) body.foto = model.foto;
+    if (model.url != null) {
+      // Mapear a posibles nombres de campo del backend
+      body.url = model.url;
+      body.enlace = model.url;
+    }
     return body;
   }
 

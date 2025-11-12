@@ -62,6 +62,10 @@ import { UploadService } from '../../core/services/upload.service';
                 <img [src]="instalacionForm.get('foto')?.value" alt="Preview foto" style="max-height:80px;border:1px solid #ddd;border-radius:4px" />
               </div>
             </div>
+            <div class="form-group">
+              <label>Enlace (URL)</label>
+              <input type="url" formControlName="url" class="form-control" placeholder="https://...">
+            </div>
           </div>
 
           <div class="form-row">
@@ -113,6 +117,7 @@ import { UploadService } from '../../core/services/upload.service';
               </td>
               <td>{{ ins.estado }}</td>
               <td>
+                <a *ngIf="ins.url" [href]="ins.url" target="_blank" rel="noopener" class="btn btn-sm btn-secondary" title="Abrir enlace">Enlace</a>
                 <button (click)="editInstalacion(ins)" class="btn btn-sm btn-warning">Editar</button>
                 <button (click)="deleteInstalacion(ins.id!)" class="btn btn-sm btn-danger">Eliminar</button>
               </td>
@@ -154,18 +159,19 @@ export class AdminInstalacionesComponent implements OnInit {
   constructor(
     private instalacionesService: InstalacionService,
     private fb: FormBuilder
-  ) {
-    this.instalacionForm = this.fb.group({
-      nombre: ['', Validators.required],
-      descripcion: [''],
-      tipo: [''],
-      capacidadMaxima: [0, [Validators.required, Validators.min(0)]],
-      precioHora: [0, [Validators.min(0)]],
-      requiereAprobacion: [false],
-      foto: [''],
-      estado: ['']
-    });
-  }
+    ) {
+      this.instalacionForm = this.fb.group({
+        nombre: ['', Validators.required],
+        descripcion: [''],
+        tipo: [''],
+        capacidadMaxima: [0, [Validators.required, Validators.min(0)]],
+        precioHora: [0, [Validators.min(0)]],
+        requiereAprobacion: [false],
+        foto: [''],
+        url: [''],
+        estado: ['']
+      });
+    }
 
   private notify = inject(NotificationService);
   private uploadSrv = inject(UploadService);
@@ -239,6 +245,7 @@ export class AdminInstalacionesComponent implements OnInit {
       precioHora: ins.precioHora ?? 0,
       requiereAprobacion: ins.requiereAprobacion ?? false,
       foto: ins.foto ?? ins.imagen ?? '',
+      url: ins.url ?? '',
       estado: ins.estado ?? ''
     });
     this.showForm = true;

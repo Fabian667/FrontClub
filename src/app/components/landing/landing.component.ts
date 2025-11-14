@@ -150,6 +150,13 @@ export class LandingComponent implements OnInit {
           .map((s) => s.imagen)
           .filter((url) => !!url);
 
+        // Mostrar la primera imagen que cargue sin esperar a todas
+        const firstLoaded = await this.preloadFirstValid(urls);
+        if (firstLoaded) {
+          this.sliderIndex = 0;
+          this.backgroundStyle.set(`url(${firstLoaded})`);
+        }
+
         // Preload verificando que carguen correctamente; descartamos las que fallen
         let valid = await this.preloadAndFilter(urls);
 
@@ -166,6 +173,12 @@ export class LandingComponent implements OnInit {
 
         // Si sigue vacío, usamos las imágenes por defecto declaradas arriba
         if (valid.length === 0) {
+          // Intentamos también mostrar la primera que cargue de los defaults
+          const firstDefault = await this.preloadFirstValid(this.DEFAULT_LANDING_SLIDER_IMAGES);
+          if (firstDefault) {
+            this.sliderIndex = 0;
+            this.backgroundStyle.set(`url(${firstDefault})`);
+          }
           valid = await this.preloadAndFilter(this.DEFAULT_LANDING_SLIDER_IMAGES);
         }
 
@@ -186,11 +199,49 @@ export class LandingComponent implements OnInit {
     });
   }
 
+  // Cargar la primera imagen válida tan pronto como esté disponible (con timeout)
+  private preloadFirstValid(urls: string[], timeoutMs = 4000): Promise<string | null> {
+    return new Promise((resolve) => {
+      if (!urls || urls.length === 0) return resolve(null);
+      let resolved = false;
+      let pending = urls.length;
+      const maybeResolve = (val: string | null) => {
+        if (!resolved) {
+          resolved = true;
+          resolve(val);
+        }
+      };
+      urls.forEach((url) => {
+        try {
+          const img = new Image();
+          const timer = setTimeout(() => {
+            // Si no cargó a tiempo, considerar esta URL inválida
+            img.onload = null as any;
+            img.onerror = null as any;
+            if (--pending === 0) maybeResolve(null);
+          }, timeoutMs);
+          img.onload = () => {
+            clearTimeout(timer);
+            maybeResolve(url);
+          };
+          img.onerror = () => {
+            clearTimeout(timer);
+            if (--pending === 0) maybeResolve(null);
+          };
+          img.src = url;
+        } catch {
+          if (--pending === 0) maybeResolve(null);
+        }
+      });
+    });
+  }
+
   private preloadAndFilter(urls: string[]): Promise<string[]> {
     const loaders = urls.map((url) => new Promise<string>((resolve) => {
       const img = new Image();
-      img.onload = () => resolve(url);
-      img.onerror = () => resolve(''); // marcar inválida
+      const timer = setTimeout(() => resolve(''), 5000); // timeout de 5s por imagen
+      img.onload = () => { clearTimeout(timer); resolve(url); };
+      img.onerror = () => { clearTimeout(timer); resolve(''); }; // marcar inválida
       img.src = url;
     }));
     return Promise.all(loaders).then((res) => res.filter((u) => !!u));

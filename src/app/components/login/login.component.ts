@@ -17,16 +17,8 @@ export class LoginComponent {
   private router = inject(Router);
   loading = signal(false);
   error = signal<string | null>(null);
-  showRegister = signal(false);
 
   form = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]]
-  });
-
-  registerForm = this.fb.group({
-    nombre: ['', [Validators.required]],
-    apellido: ['', [Validators.required]],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]]
   });
@@ -110,37 +102,5 @@ export class LoginComponent {
 
   cancel() {
     this.router.navigateByUrl('/');
-  }
-
-  submitRegister() {
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
-      return;
-    }
-    this.loading.set(true);
-    this.error.set(null);
-    const payload = { ...this.registerForm.value } as any;
-    this.auth.register(payload).subscribe({
-      next: () => {
-        // Intentar iniciar sesión con las mismas credenciales
-        this.form.patchValue({ email: payload.email, password: payload.password });
-        this.showRegister.set(false);
-        // Reutilizar flujo de login
-        this.submit();
-      },
-      error: (err) => {
-        const status = err?.status;
-        const backendMsg = err?.error?.message || err?.error?.error || err?.statusText;
-        if (status === 409) {
-          this.error.set(backendMsg || 'El email ya está registrado. Intenta iniciar sesión.');
-        } else if (status === 0) {
-          this.error.set('Servidor no disponible. Verifica conexión al backend.');
-        } else {
-          this.error.set(backendMsg || 'Error al registrar. Intenta nuevamente.');
-        }
-        console.error('Register error:', err);
-        this.loading.set(false);
-      }
-    });
   }
 }
